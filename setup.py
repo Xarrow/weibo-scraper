@@ -7,7 +7,7 @@ from setuptools import find_packages, setup, Command
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with io.open(os.path.join(here,'README.rst'),encoding='UTF-8') as f:
+with io.open(os.path.join(here,'README.md'),encoding='UTF-8') as f:
     long_description = '\n'+f.read()
 class UploadCommand(Command):
     """Support setup.py upload."""
@@ -47,9 +47,9 @@ setup(
     version="1.0.0",
     long_description = long_description,
     name="weibo-scraper",
-    url="",
+    url="https://github.com/Xarrow/weibo-scraper",
     author="helixcs",
-    author_email="zhangjian.dev@gmail.com",
+    author_email="zhangjian12424@gmail.com",
     license="MIT",
     classifiers=[
         # Trove classifiers

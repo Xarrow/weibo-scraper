@@ -1,0 +1,15 @@
+attrs==18.1.0
+certifi==2018.4.16
+chardet==3.0.4
+idna==2.6
+more-itertools==4.1.0
+pkginfo==1.4.2
+pluggy==0.6.0
+py==1.5.3
+pytest==3.5.1
+requests-toolbelt==0.8.0
+requests==2.18.4
+six==1.11.0
+tqdm==4.23.3
+twine==1.11.0
+urllib3==1.22

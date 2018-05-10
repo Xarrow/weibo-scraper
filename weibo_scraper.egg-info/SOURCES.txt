@@ -1,0 +1,8 @@
+README.md
+setup.py
+weibo_scraper.py
+weibo_scraper.egg-info/PKG-INFO
+weibo_scraper.egg-info/SOURCES.txt
+weibo_scraper.egg-info/dependency_links.txt
+weibo_scraper.egg-info/requires.txt
+weibo_scraper.egg-info/top_level.txt
