@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 """
- Verion: 1.0.0
+ Verion: 1.0.1
  Author: helixcs
  Site: https://iliangqunru.bitcron.com/
  File: weibo_scraper.py
