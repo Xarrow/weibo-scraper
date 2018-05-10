@@ -24,7 +24,7 @@ for tweet in get_weibo_tweets(container_id='1076031843242321',pages=5):
     print(tweet)
 ```
 
-[!img](weibo_tweets.png)
+![img](weibo_tweets.png)
 
 P.S. Very Thanks For Twiiter-Scraper
 
