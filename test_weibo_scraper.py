@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 """
- Verion: 1.0.1
  Author: Helixcs
  Site: https://iliangqunru.bitcron.com/
  File: test_weibo_scraper.py
