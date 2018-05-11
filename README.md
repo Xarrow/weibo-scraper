@@ -1,5 +1,7 @@
 # Weibo Scraper
 
+[![Coverage Status](https://coveralls.io/repos/github/Xarrow/weibo-scraper/badge.svg?branch=master)](https://coveralls.io/github/Xarrow/weibo-scraper?branch=master)
+
 Simple weibo tweet scraper . Crawl weibo tweets by containedId without authorization.
 There are many limitations in official API .
 In general , we can inspect mobile site which has it's own API by Chrome.
