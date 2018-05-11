@@ -1,5 +1,7 @@
 # Weibo Scraper
 
+[![Build Status](https://travis-ci.org/Xarrow/weibo-scraper.svg?branch=master)](https://travis-ci.org/Xarrow/weibo-scraper)
+
 [![Coverage Status](https://coveralls.io/repos/github/Xarrow/weibo-scraper/badge.svg?branch=master)](https://coveralls.io/github/Xarrow/weibo-scraper?branch=master)
 
 Simple weibo tweet scraper . Crawl weibo tweets by containedId without authorization.
