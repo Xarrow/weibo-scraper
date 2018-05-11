@@ -6,4 +6,4 @@ install:
 script:
   - pytest
 after_success:
-  coveralls
+  - coveralls
