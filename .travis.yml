@@ -5,6 +5,6 @@ install:
   - pip install codecov
   - pip install -r requirements.txt
 script:
-  - pytest
+  - coverage run test_weibo_scraper.py
 after_success:
   - codecov
