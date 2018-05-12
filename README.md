@@ -1,7 +1,8 @@
 # Weibo Scraper
 
 [![Build Status](https://travis-ci.org/Xarrow/weibo-scraper.svg?branch=master)](https://travis-ci.org/Xarrow/weibo-scraper)
-
+[![codecov](https://codecov.io/gh/Xarrow/weibo-scraper/branch/master/graph/badge.svg)](https://codecov.io/gh/Xarrow/weibo-scraper)
+----
 
 Simple weibo tweet scraper . Crawl weibo tweets by containedId without authorization.
 There are many limitations in official API .
