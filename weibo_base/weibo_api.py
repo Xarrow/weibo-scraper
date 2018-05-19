@@ -55,12 +55,21 @@ def weibo_getIndex(uid_value: str) -> Response:
     return None
 
 
-def weibo_tweets(contaierid: str) -> Response:
+def weibo_tweets(containerid: str, page: int) -> Response:
     """
-
-    :param contaierid:
+    get person weibo tweets which from contaninerid in page,
+    this api is like 'https://m.weibo.cn/container/getIndex?containerid=<containerid>&page=<page>'
+    >>> from weibo_base import  weibo_tweets
+    >>> _response = weibo_tweets(contaierid='1076031843242321',page=1)
+    >>> ..._response
+    :param contaierid: containerid
+    :param page: page
     :return:
     """
+    _params = {"containerid": containerid, "page": page}
+    _response = requests.get(url=_GET_INDEX, params=_params)
+    if _response.status_code == 200:
+        return _response.json()
     return None
 
 

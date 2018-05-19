@@ -8,11 +8,13 @@
 """
 
 import threading
+
+import math
 import requests
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 
-from weibo_base import search_by_name, exist_get_uid, get_weibo_containerid
+from weibo_base import exist_get_uid, get_weibo_containerid, weibo_tweets
 
 import sys
 
@@ -34,13 +36,24 @@ class WeiBoScraperException(Exception):
         self.message = message
 
 
-def get_weibo_tweets_by_name(name: str, pages: int = 10):
+def get_weibo_tweets_by_name(name: str, pages: int = None):
     """
-    get weibo tweets with nick name
+    Get weibo tweets by nick name without any authorization
+    >>> from weibo_scraper import  get_weibo_tweets_by_name
+    >>> for tweet in get_weibo_tweets_by_name(name='Helixcs', pages=2):
+    >>>     print(tweet)
     :param name: nick name which you want to search
     :param pages: pages ,default 10
     :return:
     """
+
+    def _pre_get_total_pages(weibo_containerid):
+        _weibo_tweets_response = weibo_tweets(containerid=weibo_containerid, page=1)
+        if _weibo_tweets_response is None or _weibo_tweets_response.get('ok') != 1:
+            raise WeiBoScraperException("pre get total pages failed , please set pages  or try again")
+        _total_tweets = _weibo_tweets_response.get('data').get('cardlistInfo').get('total')
+        return math.ceil(_total_tweets / 10)
+
     if name == '':
         raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
     _egu_res = exist_get_uid(name=name)
@@ -48,11 +61,14 @@ def get_weibo_tweets_by_name(name: str, pages: int = 10):
     uid = _egu_res.get("uid")
     if exist:
         weibo_containerid = get_weibo_containerid(uid=uid)
+        if pages is None:
+            pages = _pre_get_total_pages(weibo_containerid=weibo_containerid)
         yield from get_weibo_tweets(container_id=weibo_containerid, pages=pages)
 
 
-def get_weibo_tweets(container_id: str, pages: int = 25):
-    """ get weibo tweets from mobile without authorization,and this containerid exist in the api of
+def get_weibo_tweets(container_id: str, pages: int):
+    """
+    Get weibo tweets from mobile without authorization,and this containerid exist in the api of
     'https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321'
 
         :param container_id :weibo container_id
@@ -117,4 +133,3 @@ def get_weibo_tweets(container_id: str, pages: int = 25):
         future = pool.submit(gen_result, pages)
 
     yield from gen_result(pages)
-
