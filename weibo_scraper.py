@@ -36,6 +36,18 @@ class WeiBoScraperException(Exception):
         self.message = message
 
 
+class WeiboScraperParse():
+    def __init__(self, name, uid, weibo_containerid, pages):
+        self.name = name
+        self.uid = uid
+        self.weibo_containerid = weibo_containerid
+        self.pages = pages
+
+    @property
+    def name(self):
+        return self.name
+
+
 def get_weibo_tweets_by_name(name: str, pages: int = None):
     """
     Get weibo tweets by nick name without any authorization
@@ -50,7 +62,7 @@ def get_weibo_tweets_by_name(name: str, pages: int = None):
     def _pre_get_total_pages(weibo_containerid):
         _weibo_tweets_response = weibo_tweets(containerid=weibo_containerid, page=1)
         if _weibo_tweets_response is None or _weibo_tweets_response.get('ok') != 1:
-            raise WeiBoScraperException("pre get total pages failed , please set pages  or try again")
+            raise WeiBoScraperException("prepare get total pages failed , please set pages  or try again")
         _total_tweets = _weibo_tweets_response.get('data').get('cardlistInfo').get('total')
         return math.ceil(_total_tweets / 10)
 
@@ -78,9 +90,9 @@ def get_weibo_tweets(container_id: str, pages: int):
 
     def gen_result(pages):
         """parse weibo content json"""
-
-        while pages > 0:
-            params = {"containerid": container_id, "page": pages}
+        _current_page = 1
+        while pages+1 > _current_page:
+            params = {"containerid": container_id, "page": _current_page}
 
             _response = requests.get(url=api, params=params)
             # skip bad request
@@ -101,9 +113,11 @@ def get_weibo_tweets(container_id: str, pages: int):
                 scheme = _cards.get("scheme")
 
                 created_at = _cards.get('mblog').get("created_at")
+                # 05-08
                 if len(created_at) < 9 and str(created_at).__contains__("-"):
                     created_at = CURRENT_YEAR + "-" + created_at
-                if not str(created_at).__contains__("-"):
+                # 11 分钟之前
+                elif not str(created_at).__contains__("-"):
                     created_at = CURRENT_YEAR_WITH_DATE
                 mid = _cards.get('mblog').get("mid")
                 text = _cards.get('mblog').get("text")
@@ -126,7 +140,7 @@ def get_weibo_tweets(container_id: str, pages: int):
                 mblog = str(_cards.get('mblog'))
                 # just yield field of mblog
                 yield mblog
-            pages += -1
+            _current_page += 1
 
         # t = threading.Thread(target=gen_result,args=(page,))
         # t.start()
