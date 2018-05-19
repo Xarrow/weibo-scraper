@@ -12,6 +12,8 @@ import requests
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 
+from weibo_base import search_by_name, exist_get_uid, get_weibo_containerid
+
 import sys
 
 try:
@@ -27,12 +29,34 @@ CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
 pool = ThreadPoolExecutor(20)
 
 
+class WeiBoScraperException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+def get_weibo_tweets_by_name(name: str, pages: int = 10):
+    """
+    get weibo tweets with nick name
+    :param name: nick name which you want to search
+    :param pages: pages ,default 10
+    :return:
+    """
+    if name == '':
+        raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
+    _egu_res = exist_get_uid(name=name)
+    exist = _egu_res.get("exist")
+    uid = _egu_res.get("uid")
+    if exist:
+        weibo_containerid = get_weibo_containerid(uid=uid)
+        yield from get_weibo_tweets(container_id=weibo_containerid, pages=pages)
+
+
 def get_weibo_tweets(container_id: str, pages: int = 25):
     """ get weibo tweets from mobile without authorization,and this containerid exist in the api of
     'https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321'
 
-        :param container_id weibo container_id
-        :param pages
+        :param container_id :weibo container_id
+        :param pages :default 25
     """
     api = "https://m.weibo.cn/api/container/getIndex"
 
@@ -93,3 +117,4 @@ def get_weibo_tweets(container_id: str, pages: int = 25):
         future = pool.submit(gen_result, pages)
 
     yield from gen_result(pages)
+

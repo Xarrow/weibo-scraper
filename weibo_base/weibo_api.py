@@ -24,7 +24,9 @@ def search_by_name(name: str) -> Response:
     """get summary info which searched by name,
      this api is like 'https://m.weibo.cn/api/container/getIndex?queryVal=<name sample as Helixcs>&containerid=100103type%3D3%26q%3D<name sample as Helixcs>'
 
-
+    >>> from weibo_base import search_by_name
+    >>> _response = search_by_name('Helixcs')
+    >>> ..._response
      :param name: nick name which you want to search
      :return json string including summary info
     """
@@ -39,6 +41,10 @@ def weibo_getIndex(uid_value: str) -> Response:
     """
     get personal summary info which request by uid, and uid is got by 'search_by_name'
     this api is like 'https://m.weibo.cn/api/container/getIndex?type=uid&value=<uid_value sample as 1843242321>'
+
+    >>> from weibo_base import  weibo_getIndex
+    >>> _response = weibo_getIndex('1843242321')
+    >>> ..._response
     :param uid_value:
     :return:
     """
@@ -82,3 +88,20 @@ def exist_get_uid(search_by_name_response: str = None, name: str = "") -> dict:
     if screen_name == name:
         return {"exist": True, "name": name, "uid": user.get('id')}
     return {"exist": False, "name": name, "uid": None}
+
+
+def get_weibo_containerid(weibo_getIndex_response: str = None, uid: str = ""):
+    """
+
+    :param uid:
+    :return:
+    """
+    if weibo_getIndex_response is None or str(weibo_getIndex_response) == '':
+        weibo_getIndex_response = weibo_getIndex(uid)
+    if weibo_getIndex_response.get('ok') != 1:
+        return None
+    tabs = weibo_getIndex_response.get('data').get('tabsInfo').get('tabs')
+    for tab in tabs:
+        if tab.get('tab_type') == 'weibo':
+            return tab.get('containerid')
+    return None
