@@ -52,7 +52,7 @@ def get_weibo_tweets_by_name(name: str, pages: int = None):
     """
     Get weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_weibo_tweets_by_name
-    >>> for tweet in get_weibo_tweets_by_name(name='Helixcs', pages=2):
+    >>> for tweet in get_weibo_tweets_by_name(name='Helixcs', pages=1):
     >>>     print(tweet)
     :param name: nick name which you want to search
     :param pages: pages ,default 10
@@ -82,10 +82,15 @@ def get_weibo_tweets(container_id: str, pages: int):
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
     'https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321'
-
-        :param container_id :weibo container_id
-        :param pages :default None
+    >>> from weibo_scraper import  get_weibo_tweets
+    >>> for tweet in get_weibo_tweets(container_id='1076033637346297',pages=1):
+    >>>     print(tweet)
+    >>> ....
+    :param container_id :weibo container_id
+    :param pages :default None
+    :return
     """
+
     def gen_result(pages):
         """parse weibo content json"""
         _current_page = 1
@@ -94,47 +99,13 @@ def get_weibo_tweets(container_id: str, pages: int):
             # skip bad request
             if _response_json is None:
                 continue
-
-            _containerid = _response_json.get("data").get("cardlistInfo").get("containerid")
-            cards = _response_json.get('data').get("cards")
-            for _cards in cards:
+            _cards = _response_json.get('data').get("cards")
+            for _card in _cards:
                 # skip recommended tweets
-                if _cards.get("card_group"):
+                if _card.get("card_group"):
                     continue
-
-                # =========== simple parse target fields below ============
-
-                itemid = _cards.get("itemid")
-                scheme = _cards.get("scheme")
-
-                created_at = _cards.get('mblog').get("created_at")
-                # 05-08
-                if len(created_at) < 9 and str(created_at).__contains__("-"):
-                    created_at = CURRENT_YEAR + "-" + created_at
-                # 11 分钟之前
-                elif not str(created_at).__contains__("之前"):
-                    created_at = CURRENT_YEAR_WITH_DATE
-                mid = _cards.get('mblog').get("mid")
-                text = _cards.get('mblog').get("text")
-                source = _cards.get('mblog').get("source")
-                userid = _cards.get('mblog').get("user").get("id")
-                reposts_count = _cards.get('mblog').get("reposts_count")
-                comments_count = _cards.get('mblog').get("comments_count")
-                attitudes_count = _cards.get('mblog').get("attitudes_count")
-                raw_text = ""
-                if _cards.get('mblog').get("raw_text"):
-                    raw_text = _cards.get('mblog').get("raw_text")
-
-                bid = _cards.get('mblog').get("bid")
-
-                pics_dict = {}
-                if _cards.get('mblog').get("pics"):
-                    pics = str(_cards.get('mblog').get("pics"))
-                    pics_dict['weibo_pics'] = pics
-
-                mblog = str(_cards.get('mblog'))
                 # just yield field of mblog
-                yield mblog
+                yield _card
             _current_page += 1
 
         # t = threading.Thread(target=gen_result,args=(page,))

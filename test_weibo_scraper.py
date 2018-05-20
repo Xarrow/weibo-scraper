@@ -54,7 +54,7 @@ class TestWeiboScraper(unittest.TestCase):
         print(result)
 
     def test_get_weibo_tweets_by_name(self):
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='Helixcs', pages=10):
+        for i in weibo_scraper.get_weibo_tweets_by_name(name='Helixcs', pages=1):
             print(i)
 
 
