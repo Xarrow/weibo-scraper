@@ -14,7 +14,7 @@ from weibo_base import *
 
 class TestWeiboScraper(unittest.TestCase):
     def test_get_weibo_tweets(self):
-        result = weibo_scraper.get_weibo_tweets(container_id='1076031843242321',pages=7)
+        result = weibo_scraper.get_weibo_tweets(container_id='1076031843242321',pages=9)
         for tweet in result:
             print(tweet)
         self.assertIsNotNone(result)
@@ -54,7 +54,7 @@ class TestWeiboScraper(unittest.TestCase):
         print(result)
 
     def test_get_weibo_tweets_by_name(self):
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='嘻红豆', pages=None):
+        for i in weibo_scraper.get_weibo_tweets_by_name(name='Helixcs', pages=None):
             print(i)
 
 

@@ -84,22 +84,17 @@ def get_weibo_tweets(container_id: str, pages: int):
     'https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321'
 
         :param container_id :weibo container_id
-        :param pages :default 25
+        :param pages :default None
     """
-    api = "https://m.weibo.cn/api/container/getIndex"
-
     def gen_result(pages):
         """parse weibo content json"""
         _current_page = 1
-        while pages+1 > _current_page:
-            params = {"containerid": container_id, "page": _current_page}
-
-            _response = requests.get(url=api, params=params)
+        while pages + 1 > _current_page:
+            _response_json = weibo_tweets(containerid=container_id, page=_current_page)
             # skip bad request
-            if _response.status_code != 200:
+            if _response_json is None:
                 continue
 
-            _response_json = _response.json()
             _containerid = _response_json.get("data").get("cardlistInfo").get("containerid")
             cards = _response_json.get('data').get("cards")
             for _cards in cards:
@@ -117,7 +112,7 @@ def get_weibo_tweets(container_id: str, pages: int):
                 if len(created_at) < 9 and str(created_at).__contains__("-"):
                     created_at = CURRENT_YEAR + "-" + created_at
                 # 11 分钟之前
-                elif not str(created_at).__contains__("-"):
+                elif not str(created_at).__contains__("之前"):
                     created_at = CURRENT_YEAR_WITH_DATE
                 mid = _cards.get('mblog').get("mid")
                 text = _cards.get('mblog').get("text")
