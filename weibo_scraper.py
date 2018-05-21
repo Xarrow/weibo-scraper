@@ -102,7 +102,3 @@ def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
         future = pool.submit(gen_result, pages)
 
     yield from gen_result(pages)
-
-if __name__ == '__main__':
-    for i in get_weibo_tweets_by_name(name='Helixcs', pages=1):
-        print(i)
