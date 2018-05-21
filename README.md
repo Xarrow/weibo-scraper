@@ -63,7 +63,7 @@ So you can get result which are formatted and ordered by create time  as below.
 
 ```
 
-![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png
+![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png)
 
 ----
 # P.S
