@@ -101,9 +101,9 @@ def exist_get_uid(search_by_name_response: str = None, name: str = "") -> dict:
 
 def get_weibo_containerid(weibo_getIndex_response: str = None, uid: str = ""):
     """
-
-    :param uid:
-    :return:
+    get weibo_containerid
+    :param uid: uid
+    :return: weibo_containerid
     """
     if weibo_getIndex_response is None or str(weibo_getIndex_response) == '':
         weibo_getIndex_response = weibo_getIndex(uid)
