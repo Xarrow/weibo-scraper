@@ -8,7 +8,6 @@ requests = "*"
 twine = "*"
 pytest = "*"
 requests-html = "*"
-simplejson = "*"
 
 [dev-packages]
 
