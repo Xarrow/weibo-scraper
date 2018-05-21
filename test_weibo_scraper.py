@@ -57,6 +57,9 @@ class TestWeiboScraper(unittest.TestCase):
         for i in weibo_scraper.get_weibo_tweets_by_name(name='Helixcs', pages=1):
             print(i)
 
+        for i in weibo_scraper.get_weibo_tweets_by_name(name='nicknameisnotexist', pages=1):
+            self.assertIsNone(i)
+
 
 if __name__ == '__main__':
     unittest.main()
