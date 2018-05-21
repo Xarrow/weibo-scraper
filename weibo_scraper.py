@@ -12,10 +12,10 @@ import threading
 import math
 import datetime
 import sys
+
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
 from weibo_base import exist_get_uid, get_weibo_containerid, weibo_tweets
-
 try:
     assert sys.version_info.major == 3
     assert sys.version_info.minor >= 6
@@ -64,7 +64,8 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
         if pages is None:
             pages = _pre_get_total_pages(weibo_containerid=weibo_containerid)
         yield from get_weibo_tweets(container_id=weibo_containerid, pages=pages)
-    yield None
+    else:
+        yield None
 
 
 def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
@@ -102,3 +103,7 @@ def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
         future = pool.submit(gen_result, pages)
 
     yield from gen_result(pages)
+
+if __name__ == '__main__':
+    for i in get_weibo_tweets_by_name(name='Helixcs', pages=1):
+        print(i)
