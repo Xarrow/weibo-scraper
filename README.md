@@ -31,7 +31,7 @@ Only Python 3.6+ is supported
 
 ```
 
-2. You also can get weibo tweets by nick name which is exist . And the param of `pages` is optional .
+2. You  can also get weibo tweets by nick name which is exist . And the param of `pages` is optional .
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets_by_name
@@ -40,7 +40,7 @@ Only Python 3.6+ is supported
 >>> ....
 ```
 
-3. If you want get all tweets , you can set the param of `pages` as `None`
+3. If you want to get all tweets , you can set the param of `pages` as `None`
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets_by_name
