@@ -11,10 +11,41 @@ In general , we can inspect mobile site which has it's own API by Chrome.
 ----
 # Installation
 
+### pip
+
 ```shell
+
 $ pip install weibo-scraper
 
 ```
+
+Or Upgrade it.
+
+
+```shell
+
+$ pip install --upgrade weibo-scraper
+
+```
+
+### pipenv
+
+```shell
+
+$ pipenv install weibo-scraper
+
+```
+Or Upgrade it.
+
+```shell
+$ pipenv update --outdated
+
+$ pipenv update weibo-scraper # just update weibo-scraper
+
+```
+
+
+
 
 Only Python 3.6+ is supported
 

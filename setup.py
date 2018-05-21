@@ -45,7 +45,7 @@ class UploadCommand(Command):
 
 
 setup(
-    version="1.0.3",
+    version="1.0.4",
     long_description=long_description,
     long_description_content_type="text/markdown",
     name="weibo-scraper",
