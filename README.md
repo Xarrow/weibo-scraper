@@ -38,7 +38,7 @@ $ pipenv install weibo-scraper
 Or Upgrade it.
 
 ```shell
-$ pipenv update --outdated
+$ pipenv update --outdated # show packages which are outdated
 
 $ pipenv update weibo-scraper # just update weibo-scraper
 
