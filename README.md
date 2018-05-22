@@ -1,5 +1,8 @@
 # Weibo Scraper
 
+
+![PyPI](https://img.shields.io/pypi/v/weibo-scraper.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/weibo-scraper.svg)
 [![Build Status](https://travis-ci.org/Xarrow/weibo-scraper.svg?branch=master)](https://travis-ci.org/Xarrow/weibo-scraper)
 [![codecov](https://codecov.io/gh/Xarrow/weibo-scraper/branch/master/graph/badge.svg)](https://codecov.io/gh/Xarrow/weibo-scraper)
 ----
