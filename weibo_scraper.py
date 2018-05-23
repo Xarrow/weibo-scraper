@@ -39,6 +39,9 @@ class WeiBoScraperException(Exception):
 def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets by nick name without any authorization
+    1. Search by Nname and get uid by this api "https://m.weibo.cn/api/container/getIndex?queryVal=来去之间&containerid=100103type%3D3%26q%3D来去之间"
+    2. Get profile info by uid , https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
+    3. Get weibo tweets by container in node of "tabs" ,https://m.weibo.cn/api/container/getIndex?containerid=2304131111681197_-_&page=6891
     >>> from weibo_scraper import  get_weibo_tweets_by_name
     >>> for tweet in get_weibo_tweets_by_name(name='Helixcs', pages=1):
     >>>     print(tweet)

@@ -14,7 +14,7 @@ from weibo_base import *
 
 class TestWeiboScraper(unittest.TestCase):
     def test_get_weibo_tweets(self):
-        result = weibo_scraper.get_weibo_tweets(container_id='1076031843242321',pages=9)
+        result = weibo_scraper.get_weibo_tweets(container_id='1076031843242321', pages=1)
         for tweet in result:
             print(tweet)
         self.assertIsNotNone(result)
@@ -50,15 +50,20 @@ class TestWeiboScraper(unittest.TestCase):
         self.assertIsNotNone(test_result)
 
     def test_weibo_tweets(self):
-        result = weibo_tweets(containerid='1076033637346297',page=1)
+        result = weibo_tweets(containerid='1076033637346297', page=1)
         print(result)
 
     def test_get_weibo_tweets_by_name(self):
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='Helixcs', pages=1):
+        for i in weibo_scraper.get_weibo_tweets_by_name(name='嘻红豆', pages=1):
             print(i)
 
         for i in weibo_scraper.get_weibo_tweets_by_name(name='nicknameisnotexist', pages=1):
+            print(i)
             self.assertIsNone(i)
+
+    def test_get_containerid_new_version(self):
+        for i in weibo_scraper.get_weibo_tweets_by_name(name='来去之间'):
+            print(i)
 
 
 if __name__ == '__main__':

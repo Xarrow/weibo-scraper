@@ -110,7 +110,11 @@ def get_weibo_containerid(weibo_getIndex_response: str = None, uid: str = ""):
     if weibo_getIndex_response.get('ok') != 1:
         return None
     tabs = weibo_getIndex_response.get('data').get('tabsInfo').get('tabs')
-    for tab in tabs:
-        if tab.get('tab_type') == 'weibo':
-            return tab.get('containerid')
+    # fix different api
+    if isinstance(tabs, list):
+        for tab in tabs:
+            if tab.get('tab_type') == 'weibo':
+                return tab.get('containerid')
+    elif isinstance(tabs, dict):
+        return tabs.get('0').get('containerid')
     return None
