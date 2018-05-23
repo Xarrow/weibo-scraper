@@ -8,6 +8,8 @@ requests = "*"
 twine = "*"
 pytest = "*"
 requests-html = "*"
+flask = "*"
+flasgger = "*"
 
 [dev-packages]
 
