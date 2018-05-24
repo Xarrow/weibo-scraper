@@ -35,6 +35,7 @@ DEFAULT_CONFIG = {
     "specs_route": "/"
 }
 
+# see :https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject
 TEMPLATE = {
     "swagger": "2.0",
     "info": {
