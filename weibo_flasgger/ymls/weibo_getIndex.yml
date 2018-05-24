@@ -1,0 +1,16 @@
+微博基础API - 用户个人信息查询
+用户个人信息查询
+---
+tags:
+  - 微博基础API接口
+parameters:
+  - name: uid_value
+    in: path
+    type: string
+    default: 1843242321
+    required: true
+    description: 微博用户id
+response:
+  200:
+    description: 成功返回
+swagger: 2.0
