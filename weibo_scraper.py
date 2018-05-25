@@ -26,7 +26,7 @@ now = datetime.datetime.now()
 CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
 CURRENT_YEAR = now.strftime('%Y')
 CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
-pool = ThreadPoolExecutor(20)
+pool = ThreadPoolExecutor(100)
 
 _TweetsResponse = Optional[Iterator[dict]]
 
@@ -70,6 +70,38 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     yield None
 
 
+def get_weibo_tweets_with_nolimit(container_id: str, current_page: int = 0):
+    """
+    Get weibo tweets with recursion
+    :param current_page:
+    :param container_id:
+    :return:
+    """
+
+    def gen(c_page):
+        while True:
+            print("==> current page is %s", c_page)
+            _response_json = weibo_tweets(containerid=container_id, page=c_page)
+            # skip bad request
+            if _response_json is None:
+                continue
+            elif _response_json.get("ok") != 1:
+                break
+            elif _response_json.get('data').get("cards")[0].get('name') == '暂无微博':
+                break
+            _cards = _response_json.get('data').get("cards")
+            for _card in _cards:
+                # skip recommended tweets
+                if _card.get("card_group"):
+                    continue
+                # just yield field of mblog
+                yield _card
+            c_page += 1
+
+    threading.Thread(target=gen, args=(current_page,))
+    yield from gen(c_page=current_page)
+
+
 def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
@@ -105,7 +137,3 @@ def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
         future = pool.submit(gen_result, pages)
 
     yield from gen_result(pages)
-
-if __name__ == '__main__':
-    for i in get_weibo_tweets_by_name(name='Helixcs', pages=1):
-        print(i)
