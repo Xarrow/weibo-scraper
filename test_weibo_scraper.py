@@ -62,14 +62,15 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_weibo_tweets(self):
         result = weibo_tweets(containerid='1076033637346297', page=1)
-        print(result)
+        # print(result)
 
     def test_get_weibo_tweets_by_name(self):
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='嘻红豆', pages=1):
-            print(i)
-
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='nicknameisnotexist', pages=1):
-            print(i)
+        result_iterator = weibo_scraper.get_weibo_tweets_by_name(name='嘻红豆', pages=1)
+        # for i in result_iterator:
+        #     print(i)
+        result_iterator2 = weibo_scraper.get_weibo_tweets_by_name(name='nicknameisnotexist', pages=1)
+        # for i in result_iterator2:
+        #     print(i)
 
     def test_get_containerid_from_second_profile(self):
         result_iterator = weibo_scraper.get_weibo_tweets_by_name(name='来去之间', pages=1)
