@@ -39,9 +39,6 @@ class WeiBoScraperException(Exception):
 def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets by nick name without any authorization
-    1. Search by Nname and get uid by this api "https://m.weibo.cn/api/container/getIndex?queryVal=来去之间&containerid=100103type%3D3%26q%3D来去之间"
-    2. Get profile info by uid , https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
-    3. Get weibo tweets by container in node of "tabs" ,https://m.weibo.cn/api/container/getIndex?containerid=2304131111681197_-_&page=6891
     >>> from weibo_scraper import  get_weibo_tweets_by_name
     >>> for tweet in get_weibo_tweets_by_name(name='Helixcs', pages=1):
     >>>     print(tweet)
@@ -70,18 +67,33 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     yield None
 
 
-def get_weibo_tweets_with_nolimit(container_id: str, current_page: int = 0):
+def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
     """
-    Get weibo tweets with recursion
-    :param current_page:
-    :param container_id:
-    :return:
+    Get weibo tweets from mobile without authorization,and this containerid exist in the api of
+
+    Compatibility:
+    New Api
+    1. Search by Nname and get uid by this api "https://m.weibo.cn/api/container/getIndex?queryVal=来去之间&containerid=100103type%3D3%26q%3D来去之间"
+    2. Get profile info by uid , https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
+    3. https://m.weibo.cn/api/container/getIndex?containerid=2302831111681197
+    3. Get weibo tweets by container in node of "tabs" ,https://m.weibo.cn/api/container/getIndex?containerid=2304131111681197_-_&page=6891
+    >>> from weibo_scraper import  get_weibo_tweets
+    >>> for tweet in get_weibo_tweets(container_id='1076033637346297',pages=1):
+    >>>     print(tweet)
+    >>> ....
+    :param container_id :weibo container_id
+    :param pages :default None
+    :return
     """
 
-    def gen(c_page):
+    # current_page_index = 1
+
+    def gen(_inner_current_page=1):
         while True:
-            print("==> current page is %s", c_page)
-            _response_json = weibo_tweets(containerid=container_id, page=c_page)
+            print("==> current page is %s", _inner_current_page)
+            if pages is not None and _inner_current_page > pages:
+                break
+            _response_json = weibo_tweets(containerid=container_id, page=_inner_current_page)
             # skip bad request
             if _response_json is None:
                 continue
@@ -96,44 +108,5 @@ def get_weibo_tweets_with_nolimit(container_id: str, current_page: int = 0):
                     continue
                 # just yield field of mblog
                 yield _card
-            c_page += 1
-
-    threading.Thread(target=gen, args=(current_page,))
-    yield from gen(c_page=current_page)
-
-
-def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
-    """
-    Get weibo tweets from mobile without authorization,and this containerid exist in the api of
-    'https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321'
-    >>> from weibo_scraper import  get_weibo_tweets
-    >>> for tweet in get_weibo_tweets(container_id='1076033637346297',pages=1):
-    >>>     print(tweet)
-    >>> ....
-    :param container_id :weibo container_id
-    :param pages :default None
-    :return
-    """
-
-    def gen_result(pages):
-        """parse weibo content json"""
-        _current_page = 1
-        while pages + 1 > _current_page:
-            _response_json = weibo_tweets(containerid=container_id, page=_current_page)
-            # skip bad request
-            if _response_json is None:
-                continue
-            _cards = _response_json.get('data').get("cards")
-            for _card in _cards:
-                # skip recommended tweets
-                if _card.get("card_group"):
-                    continue
-                # just yield field of mblog
-                yield _card
-            _current_page += 1
-
-        # t = threading.Thread(target=gen_result,args=(page,))
-        # t.start()
-        future = pool.submit(gen_result, pages)
-
-    yield from gen_result(pages)
+            _inner_current_page += 1
+    yield from gen()

@@ -80,4 +80,18 @@ def weibo_tweets_api(containerid, page):
     return jsonify(weibo_tweets(containerid=containerid, page=page))
 
 
+#  weibo component api
+
+@app.route('/api/weiboComponet/exist_get_uid/<name>')
+@swag_from('ymls/exist_get_uid.yml')
+def exist_get_uid_api(name):
+    return jsonify(exist_get_uid(name=name))
+
+
+@app.route('/api.weiboComponent/get_weibo_containerid/<uid>', methods=["GET"])
+@swag_from("ymls/get_weibo_containerid.yml")
+def get_weibo_containerid_api(uid):
+    return jsonify(get_weibo_containerid(uid=uid))
+
+
 app.run(port=5001, debug=True)

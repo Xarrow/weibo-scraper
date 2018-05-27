@@ -40,14 +40,25 @@ class TestWeiboScraper(unittest.TestCase):
         print(love_result2)
         self.assertIsNotNone(love_result2)
 
-        test_result = exist_get_uid(search_by_name_response='', name='暴走大事件')
-        print(test_result)
+        test_result = exist_get_uid(name='暴走大事件')
+        print(test_result)  # None
         self.assertIsNotNone(test_result)
 
     def test_get_weibo_containerid(self):
+        # common weibo id , uid is from Helixcs
         test_result = get_weibo_containerid(uid="1843242321")
-        print(test_result)  # 1076031843242321
+        print('Containerid from Helixcs is : ', test_result)  # 1076031843242321
         self.assertIsNotNone(test_result)
+
+        # second profile for weibo api , uid is from 来去之间
+        test_result2 = get_weibo_containerid(uid='1111681197')
+        print('Containerid from 来去之间 is : ', test_result2)  # 2304131111681197_-_
+        self.assertIsNone(test_result2)
+
+        # second profile for weibo api , uid is from 嘻红豆
+        test_result3 = get_weibo_containerid(uid='3637346297')
+        print('Containerid from 嘻红豆 is:', test_result3)
+        self.assertIsNone(test_result3)
 
     def test_weibo_tweets(self):
         result = weibo_tweets(containerid='1076033637346297', page=1)
@@ -56,14 +67,16 @@ class TestWeiboScraper(unittest.TestCase):
     def test_get_weibo_tweets_by_name(self):
         for i in weibo_scraper.get_weibo_tweets_by_name(name='嘻红豆', pages=1):
             print(i)
+            self.assertIsNone(i)
 
         for i in weibo_scraper.get_weibo_tweets_by_name(name='nicknameisnotexist', pages=1):
             print(i)
             self.assertIsNone(i)
 
-    def test_get_containerid_new_version(self):
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='来去之间'):
+    def test_get_containerid_from_second_profile(self):
+        for i in weibo_scraper.get_weibo_tweets_by_name(name='来去之间', pages=1):
             print(i)
+            self.assertIsNone(i)
 
 
 if __name__ == '__main__':

@@ -8,6 +8,7 @@
 """
 
 import requests
+import re
 from typing import Optional
 
 Response = Optional[str]
@@ -26,7 +27,6 @@ def search_by_name(name: str) -> Response:
 
     >>> from weibo_base import search_by_name
     >>> _response = search_by_name('Helixcs')
-    >>> ..._response
      :param name: nick name which you want to search
      :return json string including summary info
     """
@@ -44,7 +44,6 @@ def weibo_getIndex(uid_value: str) -> Response:
 
     >>> from weibo_base import  weibo_getIndex
     >>> _response = weibo_getIndex('1843242321')
-    >>> ..._response
     :param uid_value:
     :return:
     """
@@ -61,7 +60,6 @@ def weibo_tweets(containerid: str, page: int) -> Response:
     this api is like 'https://m.weibo.cn/container/getIndex?containerid=<containerid>&page=<page>'
     >>> from weibo_base import  weibo_tweets
     >>> _response = weibo_tweets(contaierid='1076031843242321',page=1)
-    >>> ..._response
     :param contaierid: containerid
     :param page: page
     :return:
@@ -99,22 +97,55 @@ def exist_get_uid(search_by_name_response: str = None, name: str = "") -> dict:
     return {"exist": False, "name": name, "uid": None}
 
 
-def get_weibo_containerid(weibo_getIndex_response: str = None, uid: str = ""):
+def get_weibo_containerid(weibo_get_index_response: str = None, uid: str = ""):
     """
     get weibo_containerid
+    :param weibo_get_index_response:
     :param uid: uid
     :return: weibo_containerid
     """
-    if weibo_getIndex_response is None or str(weibo_getIndex_response) == '':
-        weibo_getIndex_response = weibo_getIndex(uid)
-    if weibo_getIndex_response.get('ok') != 1:
+
+    if weibo_get_index_response is None or str(weibo_get_index_response) == '':
+        weibo_get_index_response = weibo_getIndex(uid)
+    if weibo_get_index_response.get('ok') != 1:
         return None
-    tabs = weibo_getIndex_response.get('data').get('tabsInfo').get('tabs')
+    tabs = weibo_get_index_response.get('data').get('tabsInfo').get('tabs')
     # fix different api
     if isinstance(tabs, list):
         for tab in tabs:
             if tab.get('tab_type') == 'weibo':
                 return tab.get('containerid')
     elif isinstance(tabs, dict):
-        return tabs.get('0').get('containerid')
+        # for weibo new api , just get profile id , not weibo containerid
+        profileid = tabs.get('0').get('containerid')
+        _response_includ_containerid_from_profile = weibo_tweets(containerid=profileid, page=0)
+        _cards = _response_includ_containerid_from_profile.get('data').get('cards')
+        for _card in _cards:
+            if _card.get('itemid') == 'more_weibo':
+                return re.findall(r'containerid=(.+?)WEIBO_SECOND', _card.get('scheme'))[0]
     return None
+
+
+class WeiboGetIndexParser(object):
+    def __init__(self, get_index_api_response: str = None, uid: str = None) -> None:
+        self.uid = uid
+        if get_index_api_response is None:
+            self.get_index_api_response = weibo_getIndex(uid_value=uid)
+        else:
+            self.get_index_api_response = get_index_api_response
+        self.tabs = self.get_index_api_response.get('data').get('tabsInfo').get('tabs')
+
+    @property
+    def raw_response(self):
+        return self.get_index_api_response
+
+    @property
+    def profile_containerid(self) -> str:
+        return self.get('0').get('containerid')
+
+    @property
+    def album_containerid(self) -> str:
+        return self.get('3').get('containerid')
+
+    # ....
+
