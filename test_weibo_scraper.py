@@ -67,16 +67,15 @@ class TestWeiboScraper(unittest.TestCase):
     def test_get_weibo_tweets_by_name(self):
         for i in weibo_scraper.get_weibo_tweets_by_name(name='嘻红豆', pages=1):
             print(i)
-            self.assertIsNone(i)
 
         for i in weibo_scraper.get_weibo_tweets_by_name(name='nicknameisnotexist', pages=1):
             print(i)
-            self.assertIsNone(i)
 
     def test_get_containerid_from_second_profile(self):
-        for i in weibo_scraper.get_weibo_tweets_by_name(name='来去之间', pages=1):
+        result_iterator = weibo_scraper.get_weibo_tweets_by_name(name='来去之间', pages=1)
+        for i in result_iterator:
             print(i)
-            self.assertIsNone(i)
+        self.assertIsNotNone(result_iterator)
 
 
 if __name__ == '__main__':
