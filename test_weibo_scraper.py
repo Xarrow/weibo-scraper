@@ -53,12 +53,12 @@ class TestWeiboScraper(unittest.TestCase):
         # second profile for weibo api , uid is from 来去之间
         test_result2 = get_weibo_containerid(uid='1111681197')
         print('Containerid from 来去之间 is : ', test_result2)  # 2304131111681197_-_
-        self.assertIsNone(test_result2)
+        self.assertIsNotNone(test_result2)
 
         # second profile for weibo api , uid is from 嘻红豆
         test_result3 = get_weibo_containerid(uid='3637346297')
         print('Containerid from 嘻红豆 is:', test_result3)
-        self.assertIsNone(test_result3)
+        self.assertIsNotNone(test_result3)
 
     def test_weibo_tweets(self):
         result = weibo_tweets(containerid='1076033637346297', page=1)
