@@ -99,12 +99,3 @@ def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
 
     yield from gen()
 
-
-if __name__ == '__main__':
-    import time
-
-    start = time.time()
-    for i in get_weibo_tweets_by_name(name='Helixcs', pages=None):
-        print(i)
-    end = time.time()
-    print(end - start)
