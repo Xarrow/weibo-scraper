@@ -327,14 +327,6 @@
             ],
             "version": "==5.0.1"
         },
-        "weibo-scraper": {
-            "hashes": [
-                "sha256:c20a239709b17bf26b61577f47daace9351871c4a378c18f4e834d400376fba5",
-                "sha256:d0ae4645d15c8c5e2a4367b368845d80bf30a9f354f3ca1e6f0d153f180ef121"
-            ],
-            "index": "pypi",
-            "version": "==1.0.4"
-        },
         "werkzeug": {
             "hashes": [
                 "sha256:c3fd7a7d41976d9f44db327260e263132466836cef6f91512889ed60ad26557c",
