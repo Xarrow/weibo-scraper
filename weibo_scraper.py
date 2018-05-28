@@ -7,9 +7,6 @@
  Time: 3/16/18
 """
 
-import threading
-
-import math
 import datetime
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -46,14 +43,6 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     :param pages: pages ,default 10
     :return:
     """
-
-    def _pre_get_total_pages(weibo_containerid):
-        _weibo_tweets_response = weibo_tweets(containerid=weibo_containerid, page=1)
-        if _weibo_tweets_response is None or _weibo_tweets_response.get('ok') != 1:
-            raise WeiBoScraperException("prepare get total pages failed , please set pages  or try again")
-        _total_tweets = _weibo_tweets_response.get('data').get('cardlistInfo').get('total')
-        return math.ceil(_total_tweets / 10)
-
     if name == '':
         raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
     _egu_res = exist_get_uid(name=name)
@@ -61,13 +50,12 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     uid = _egu_res.get("uid")
     if exist:
         weibo_containerid = get_weibo_containerid(uid=uid)
-        if pages is None:
-            pages = _pre_get_total_pages(weibo_containerid=weibo_containerid)
         yield from get_weibo_tweets(container_id=weibo_containerid, pages=pages)
-    yield None
+    else:
+        yield None
 
 
-def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
+def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
 
@@ -90,7 +78,6 @@ def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
 
     def gen(_inner_current_page=1):
         while True:
-            print("==> current page is %s", _inner_current_page)
             if pages is not None and _inner_current_page > pages:
                 break
             _response_json = weibo_tweets(containerid=container_id, page=_inner_current_page)
@@ -109,4 +96,15 @@ def get_weibo_tweets(container_id: str, pages: int) -> _TweetsResponse:
                 # just yield field of mblog
                 yield _card
             _inner_current_page += 1
+
     yield from gen()
+
+
+if __name__ == '__main__':
+    import time
+
+    start = time.time()
+    for i in get_weibo_tweets_by_name(name='Helixcs', pages=None):
+        print(i)
+    end = time.time()
+    print(end - start)

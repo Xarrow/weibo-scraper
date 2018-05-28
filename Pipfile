@@ -10,6 +10,7 @@ pytest = "*"
 requests-html = "*"
 flask = "*"
 flasgger = "*"
+weibo-scraper = "*"
 
 [dev-packages]
 
