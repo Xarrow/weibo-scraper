@@ -129,8 +129,12 @@ def get_weibo_containerid(weibo_get_index_response: str = None, uid: str = ""):
 from typing import Optional
 
 _JSONResponse = Optional[dict]
+_StrFieldResponse = Optional[str]
 
 
+# two sample api
+# https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
+# https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321
 class WeiboGetIndexParser(object):
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         self.uid = uid
@@ -186,15 +190,31 @@ class WeiboGetIndexParser(object):
     # avatar_hd
     # like
     # like_me
-    @property
-    def profile_containerid(self) -> str:
-        return self.get('0').get('containerid')
-
-    @property
-    def album_containerid(self) -> str:
-        return self.get('3').get('containerid')
-
     # ....
-    @uid.setter
-    def uid(self, value):
-        self._uid = value
+
+    @property
+    def profile_containerid(self) -> _StrFieldResponse:
+        # weibo second profile api
+        if isinstance(self.tabs_node, dict):
+            return self.tabs_node.get('0').get('containerid')
+        # weibo first profile api
+        elif isinstance(self.tabs_node, list):
+            return list(filter(lambda item: item.tab_type == 'profile', self.tabs_node))[0]
+        return None
+
+    @property
+    def weibo_containerid(self) -> _StrFieldResponse:
+        # weibo second profile api
+        if isinstance(self.tabs_node, dict):
+            return self.tabs_node.get('1').get('containerid')
+        # weibo first profile api
+        elif isinstance(self.tabs_node, list):
+            return list(filter(lambda item: item.tab_type == 'weibo', self.tabs_node))[0]
+        return None
+
+    # this property is not exist in first weibo profile api
+    @property
+    def album_containerid(self) -> _StrFieldResponse:
+        return self.tabs_node.get('3').get('containerid') if isinstance(self.tabs_node, dict) else None
+
+
