@@ -217,4 +217,5 @@ class WeiboGetIndexParser(object):
     def album_containerid(self) -> _StrFieldResponse:
         return self.tabs_node.get('3').get('containerid') if isinstance(self.tabs_node, dict) else None
 
-
+    def __repr__(self):
+        return r"<WeiboGetIndexParser {} , {}>".format(repr(self.uid), repr(self.raw_response))
