@@ -126,19 +126,66 @@ def get_weibo_containerid(weibo_get_index_response: str = None, uid: str = ""):
     return None
 
 
+from typing import Optional
+
+_JSONResponse = Optional[dict]
+
+
 class WeiboGetIndexParser(object):
-    def __init__(self, get_index_api_response: str = None, uid: str = None) -> None:
+    def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         self.uid = uid
-        if get_index_api_response is None:
-            self.get_index_api_response = weibo_getIndex(uid_value=uid)
-        else:
-            self.get_index_api_response = get_index_api_response
-        self.tabs = self.get_index_api_response.get('data').get('tabsInfo').get('tabs')
+        self.get_index_api_response = weibo_getIndex(uid_value=uid) \
+            if get_index_api_response is None else get_index_api_response
 
     @property
-    def raw_response(self):
+    def raw_response(self) -> _JSONResponse:
         return self.get_index_api_response
 
+    @property
+    def user_info_node(self) -> _JSONResponse:
+        return self.get_index_api_response.get('data').get('userInfo')
+
+    @property
+    def tabs_node(self) -> _JSONResponse:
+        return self.get_index_api_response.get('data').get('tabsInfo').get('tabs')
+
+    @property
+    def fans_scheme_node(self) -> str:
+        return self.get_index_api_response.get('data').get('fans_scheme')
+
+    @property
+    def follow_scheme_node(self) -> str:
+        return self.get_index_api_response.get('data').get('follow_scheme')
+
+    @property
+    def uid(self) -> str:
+        return self.user_info_node.get('id')
+
+    @property
+    def screen_name(self) -> str:
+        return self.user_info_node.get('screen_name')
+
+    # ====== meta data
+    # profile_image_url
+    # profile_url
+    # statuses_count
+    # verified
+    # verified_type
+    # verified_type_ext
+    # verified_reason
+    # description
+    # gender
+    # mbtype
+    # urank
+    # mbrank
+    # follow_me
+    # following
+    # followers_count
+    # follow_count
+    # cover_image_phone
+    # avatar_hd
+    # like
+    # like_me
     @property
     def profile_containerid(self) -> str:
         return self.get('0').get('containerid')
@@ -148,4 +195,6 @@ class WeiboGetIndexParser(object):
         return self.get('3').get('containerid')
 
     # ....
-
+    @uid.setter
+    def uid(self, value):
+        self._uid = value

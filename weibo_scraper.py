@@ -99,3 +99,8 @@ def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
 
     yield from gen()
 
+
+if __name__ == '__main__':
+    result_iterator = get_weibo_tweets_by_name(name='来去之间', pages=1)
+    for i in result_iterator:
+        print(i)
