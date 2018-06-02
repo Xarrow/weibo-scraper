@@ -56,7 +56,7 @@ Only Python 3.6+ is supported
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets
->>> for tweet in get_weibo_tweets(container_id='1076033637346297',pages=1):
+>>> for tweet in get_weibo_tweets(tweet_container_id='1076033637346297',pages=1):
 >>>     print(tweet)
 >>> ....
 

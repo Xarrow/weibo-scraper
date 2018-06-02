@@ -66,7 +66,7 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     3. https://m.weibo.cn/api/container/getIndex?containerid=2302831111681197
     3. Get weibo tweets by container in node of "tabs" ,https://m.weibo.cn/api/container/getIndex?containerid=2304131111681197_-_&page=6891
     >>> from weibo_scraper import  get_weibo_tweets
-    >>> for tweet in get_weibo_tweets(container_id='1076033637346297',pages=1):
+    >>> for tweet in get_weibo_tweets(tweet_container_id='1076033637346297',pages=1):
     >>>     print(tweet)
     >>> ....
     :param tweet_container_id:  request weibo tweets directly by tweet_container_id
