@@ -11,7 +11,7 @@ import datetime
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
-from weibo_base import exist_get_uid, get_weibo_containerid, weibo_tweets
+from weibo_base import exist_get_uid, get_tweet_containerid, weibo_tweets
 
 try:
     assert sys.version_info.major == 3
@@ -49,13 +49,13 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     exist = _egu_res.get("exist")
     uid = _egu_res.get("uid")
     if exist:
-        weibo_containerid = get_weibo_containerid(uid=uid)
-        yield from get_weibo_tweets(container_id=weibo_containerid, pages=pages)
+        inner_tweet_containerid = get_tweet_containerid(uid=uid)
+        yield from get_weibo_tweets(tweet_container_id=inner_tweet_containerid, pages=pages)
     else:
         yield None
 
 
-def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
+def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
 
@@ -69,7 +69,7 @@ def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
     >>> for tweet in get_weibo_tweets(container_id='1076033637346297',pages=1):
     >>>     print(tweet)
     >>> ....
-    :param container_id :weibo container_id
+    :param tweet_container_id:  request weibo tweets directly by tweet_container_id
     :param pages :default None
     :return
     """
@@ -80,7 +80,7 @@ def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
         while True:
             if pages is not None and _inner_current_page > pages:
                 break
-            _response_json = weibo_tweets(containerid=container_id, page=_inner_current_page)
+            _response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page)
             # skip bad request
             if _response_json is None:
                 continue
@@ -101,6 +101,6 @@ def get_weibo_tweets(container_id: str, pages: int = None) -> _TweetsResponse:
 
 
 if __name__ == '__main__':
-    result_iterator = get_weibo_tweets_by_name(name='来去之间', pages=1)
+    result_iterator = get_weibo_tweets_by_name(name='冯小刚', pages=1)
     for i in result_iterator:
         print(i)

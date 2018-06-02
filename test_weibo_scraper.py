@@ -14,7 +14,7 @@ from weibo_base import *
 
 class TestWeiboScraper(unittest.TestCase):
     def test_get_weibo_tweets(self):
-        result = weibo_scraper.get_weibo_tweets(container_id='1076031843242321', pages=1)
+        result = weibo_scraper.get_weibo_tweets(tweet_container_id='1076031843242321', pages=1)
         for tweet in result:
             print(tweet)
         self.assertIsNotNone(result)
@@ -46,17 +46,17 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_get_weibo_containerid(self):
         # common weibo id , uid is from Helixcs
-        test_result = get_weibo_containerid(uid="1843242321")
+        test_result = get_tweet_containerid(uid="1843242321")
         print('Containerid from Helixcs is : ', test_result)  # 1076031843242321
         self.assertIsNotNone(test_result)
 
         # second profile for weibo api , uid is from 来去之间
-        test_result2 = get_weibo_containerid(uid='1111681197')
+        test_result2 = get_tweet_containerid(uid='1111681197')
         print('Containerid from 来去之间 is : ', test_result2)  # 2304131111681197_-_
         self.assertIsNotNone(test_result2)
 
         # second profile for weibo api , uid is from 嘻红豆
-        test_result3 = get_weibo_containerid(uid='3637346297')
+        test_result3 = get_tweet_containerid(uid='3637346297')
         print('Containerid from 嘻红豆 is:', test_result3)
         self.assertIsNotNone(test_result3)
 
