@@ -9,7 +9,7 @@
 
 import requests
 import re
-from typing import Optional
+from typing import Optional,List
 
 Response = Optional[str]
 
@@ -114,9 +114,8 @@ def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
     return weibo_get_index_parser.inner_tweet_id
 
 
-# ==================== Parser =====================
+# =========== Parser =====================
 
-from typing import Optional
 
 _JSONResponse = Optional[dict]
 _StrFieldResponse = Optional[str]
@@ -183,55 +182,55 @@ class MBlogMeta(object):
         return self.mblog_node
 
     @property
-    def created_at(self):
+    def created_at(self)->_StrFieldResponse:
         return self.mblog_node.get('created_at')
 
     @property
-    def id(self):
+    def id(self)->_StrFieldResponse:
         return self.mblog_node.get('id')
 
     @property
-    def idstr(self):
+    def idstr(self)->_StrFieldResponse:
         return self.mblog_node.get('idstr')
 
     @property
-    def mid(self):
+    def mid(self)->_StrFieldResponse:
         return self.mblog_node.get('mid')
 
     @property
-    def text(self):
+    def text(self)->_StrFieldResponse:
         return self.mblog_node.get('text')
 
     @property
-    def source(self):
+    def source(self)->_StrFieldResponse:
         return self.mblog_node.get('source')
 
     @property
-    def user(self):
+    def user(self)->UserMeta:
         return UserMeta(user_node=self.mblog_node.get('user'))
 
     @property
     def retweeted_status(self):
-        return MBlogMeta(mblog_node=self.mblog_node.get('retweeted_status'))
+        return MBlogMeta(mblog_node=self.mblog_node.get('retweeted_status')) if self.mblog_node.get('retweeted_status') else None
 
     @property
-    def reposts_count(self):
+    def reposts_count(self)->_IntFieldResponse:
         return self.mblog_node.get('reposts_count')
 
     @property
-    def comments_count(self):
+    def comments_count(self)->_IntFieldResponse:
         return self.mblog_node.get('comments_count')
 
     @property
-    def obj_ext(self):
+    def obj_ext(self)->_StrFieldResponse:
         return self.mblog_node.get('obj_ext')
 
     @property
-    def raw_text(self):
+    def raw_text(self)->_StrFieldResponse:
         return self.mblog_node.get('raw_text')
 
     @property
-    def bid(self):
+    def bid(self)->_StrFieldResponse:
         return self.mblog_node.get('bid')
 
 
@@ -242,22 +241,35 @@ class TweetMeta(object):
         self.card_node = card_node
 
     @property
-    def raw_card(self):
+    def raw_card(self)->dict:
         return self.card_node
 
     @property
-    def itemid(self):
+    def itemid(self)->_StrFieldResponse:
         return self.card_node.get('itemid')
 
     @property
-    def scheme(self):
+    def scheme(self)->_StrFieldResponse:
         return self.card_node.get('scheme')
 
     @property
-    def mblog(self):
+    def mblog(self)->MBlogMeta:
         return MBlogMeta(mblog_node=self.card_node.get('mblog'))
 
+_ListTweetMetaFieldResponse = List[TweetMeta]
 
+"""
+- data:
+    - cardlistInfo:
+        - containerid
+        
+    - cards: 
+        - mblog:
+            - retweeted_status
+                ....
+            - user
+                .... 
+"""
 class WeiboTweetParser(object):
     def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
         self.tweet_containerid = tweet_containerid
@@ -273,7 +285,7 @@ class WeiboTweetParser(object):
         return self.tweet_get_index_reponse.get('data').get('cardlistInfo')
 
     @property
-    def cards_node(self):
+    def cards_node(self)->_ListTweetMetaFieldResponse:
         return [TweetMeta(card_node=card) for card in self.tweet_get_index_reponse.get('data').get('cards')]
 
     @property
@@ -283,6 +295,11 @@ class WeiboTweetParser(object):
     @property
     def total(self) -> _IntFieldResponse:
         return self.card_list_info_node.get('page')
+
+    def __repr__(self):
+        return r"<WeiboTweetParser tweet_container_id = {} >".format(repr(self.tweet_containerid_node))
+
+
 
 
 class WeiboGetIndexParser(object):
