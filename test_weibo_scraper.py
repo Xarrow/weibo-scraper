@@ -79,5 +79,12 @@ class TestWeiboScraper(unittest.TestCase):
         self.assertIsNotNone(result_iterator)
 
 
+    def test_weibo_parser(self):
+        tweet_response =  weibo_scraper.weibo_tweets(containerid='1076031843242321',page=1)
+        wp = WeiboTweetParser(tweet_get_index_response=tweet_response)
+        print(wp)
+
+
+
 if __name__ == '__main__':
     unittest.main()

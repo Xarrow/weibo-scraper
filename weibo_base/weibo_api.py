@@ -112,32 +112,179 @@ def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
 
     weibo_get_index_parser = WeiboGetIndexParser(get_index_api_response=weibo_get_index_response)
     return weibo_get_index_parser.inner_tweet_id
-    # tabs = weibo_get_index_response.get('data').get('tabsInfo').get('tabs')
-    # # fix different api
-    # if isinstance(tabs, list):
-    #     for tab in tabs:
-    #         if tab.get('tab_type') == 'weibo':
-    #             return tab.get('containerid')
-    # elif isinstance(tabs, dict):
-    #     # for weibo new api , just get profile id , not weibo containerid
-    #     profileid = tabs.get('0').get('containerid')
-    #     _response_includ_containerid_from_profile = weibo_tweets(containerid=profileid, page=0)
-    #     _cards = _response_includ_containerid_from_profile.get('data').get('cards')
-    #     for _card in _cards:
-    #         if _card.get('itemid') == 'more_weibo':
-    #             return re.findall(r'containerid=(.+?)WEIBO_SECOND', _card.get('scheme'))[0]
-    # return None
 
+
+# ==================== Parser =====================
 
 from typing import Optional
 
 _JSONResponse = Optional[dict]
 _StrFieldResponse = Optional[str]
+_IntFieldResponse = Optional[int]
 
 
-# two sample api
-# https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
-# https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321
+class UserMeta(object):
+    """weibo user meta data """
+
+    def __init__(self, user_node: dict):
+        self.user_node = user_node
+
+    @property
+    def raw_user_response(self) -> _JSONResponse:
+        return self.user_node
+
+    @property
+    def id(self) -> _StrFieldResponse:
+        return self.user_node.get('id')
+
+    @property
+    def screen_name(self) -> _StrFieldResponse:
+        return self.user_node.get('screen_name')
+
+    @property
+    def profile_image_url(self) -> _StrFieldResponse:
+        return self.user_node.get('profile_image_url')
+
+    @property
+    def profile_url(self) -> _StrFieldResponse:
+        return self.user_node.get('profile_url')
+
+    @property
+    def description(self) -> _StrFieldResponse:
+        return self.user_node.get('description')
+
+    @property
+    def gender(self) -> _StrFieldResponse:
+        return self.user_node.get('gender')
+
+    @property
+    def followers_count(self) -> _IntFieldResponse:
+        return self.user_node.get('followers_count')
+
+    @property
+    def follow_count(self) -> _IntFieldResponse:
+        return self.user_node.get('follow_count')
+
+    @property
+    def cover_image_phone(self) -> _StrFieldResponse:
+        return self.user_node.get('cover_image_phone')
+
+    @property
+    def avatar_hd(self) -> _StrFieldResponse:
+        return self.user_node.get('avatar_hd')
+
+
+class MBlogMeta(object):
+    def __init__(self, mblog_node):
+        self.mblog_node = mblog_node
+
+    @property
+    def raw_mblog(self) -> _JSONResponse:
+        return self.mblog_node
+
+    @property
+    def created_at(self):
+        return self.mblog_node.get('created_at')
+
+    @property
+    def id(self):
+        return self.mblog_node.get('id')
+
+    @property
+    def idstr(self):
+        return self.mblog_node.get('idstr')
+
+    @property
+    def mid(self):
+        return self.mblog_node.get('mid')
+
+    @property
+    def text(self):
+        return self.mblog_node.get('text')
+
+    @property
+    def source(self):
+        return self.mblog_node.get('source')
+
+    @property
+    def user(self):
+        return UserMeta(user_node=self.mblog_node.get('user'))
+
+    @property
+    def retweeted_status(self):
+        return MBlogMeta(mblog_node=self.mblog_node.get('retweeted_status'))
+
+    @property
+    def reposts_count(self):
+        return self.mblog_node.get('reposts_count')
+
+    @property
+    def comments_count(self):
+        return self.mblog_node.get('comments_count')
+
+    @property
+    def obj_ext(self):
+        return self.mblog_node.get('obj_ext')
+
+    @property
+    def raw_text(self):
+        return self.mblog_node.get('raw_text')
+
+    @property
+    def bid(self):
+        return self.mblog_node.get('bid')
+
+
+class TweetMeta(object):
+    """ weibo tweet meta data"""
+
+    def __init__(self, card_node: dict) -> None:
+        self.card_node = card_node
+
+    @property
+    def raw_card(self):
+        return self.card_node
+
+    @property
+    def itemid(self):
+        return self.card_node.get('itemid')
+
+    @property
+    def scheme(self):
+        return self.card_node.get('scheme')
+
+    @property
+    def mblog(self):
+        return MBlogMeta(mblog_node=self.card_node.get('mblog'))
+
+
+class WeiboTweetParser(object):
+    def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
+        self.tweet_containerid = tweet_containerid
+        self.tweet_get_index_reponse = weibo_tweets(containerid=tweet_containerid) \
+            if tweet_get_index_response is None and tweet_containerid is not None else tweet_get_index_response
+
+    @property
+    def raw_tweet_response(self) -> _JSONResponse:
+        return self.tweet_get_index_reponse
+
+    @property
+    def card_list_info_node(self) -> _JSONResponse:
+        return self.tweet_get_index_reponse.get('data').get('cardlistInfo')
+
+    @property
+    def cards_node(self):
+        return [TweetMeta(card_node=card) for card in self.tweet_get_index_reponse.get('data').get('cards')]
+
+    @property
+    def tweet_containerid_node(self) -> _StrFieldResponse:
+        return self.card_list_info_node.get('containerid')
+
+    @property
+    def total(self) -> _IntFieldResponse:
+        return self.card_list_info_node.get('page')
+
+
 class WeiboGetIndexParser(object):
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         self.uid = uid
@@ -224,15 +371,20 @@ class WeiboGetIndexParser(object):
     def album_containerid(self) -> _StrFieldResponse:
         return self.tabs_node.get('3').get('containerid') if isinstance(self.tabs_node, dict) else None
 
+    # two sample api
+    # https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
+    # https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321
     @property
     def inner_tweet_id(self):
         if isinstance(self.tabs_node, list):
             return list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid')
         elif isinstance(self.tabs_node, dict):
-            _response_include_tweetid = weibo_tweets(containerid=self.profile_containerid,page=0)
+            _response_include_tweetid = weibo_tweets(containerid=self.profile_containerid, page=0)
             _cards = _response_include_tweetid.get('data').get('cards')
             return re.findall(r'containerid=(.+?)WEIBO_SECOND',
-                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
+                              list(
+                                  filter(
+                                      lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
         else:
             return None
 

@@ -99,8 +99,12 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
 
     yield from gen()
 
-
+import time
 if __name__ == '__main__':
-    result_iterator = get_weibo_tweets_by_name(name='冯小刚', pages=1)
+    startTime = time.time()
+
+    result_iterator = get_weibo_tweets_by_name(name='Helixcs', pages=30)
     for i in result_iterator:
         print(i)
+    endTime = time.time()
+    print(endTime-startTime)
