@@ -9,7 +9,7 @@
 
 import requests
 import re
-from typing import Optional,List
+from typing import Optional, List
 
 Response = Optional[str]
 
@@ -182,55 +182,56 @@ class MBlogMeta(object):
         return self.mblog_node
 
     @property
-    def created_at(self)->_StrFieldResponse:
+    def created_at(self) -> _StrFieldResponse:
         return self.mblog_node.get('created_at')
 
     @property
-    def id(self)->_StrFieldResponse:
+    def id(self) -> _StrFieldResponse:
         return self.mblog_node.get('id')
 
     @property
-    def idstr(self)->_StrFieldResponse:
+    def idstr(self) -> _StrFieldResponse:
         return self.mblog_node.get('idstr')
 
     @property
-    def mid(self)->_StrFieldResponse:
+    def mid(self) -> _StrFieldResponse:
         return self.mblog_node.get('mid')
 
     @property
-    def text(self)->_StrFieldResponse:
+    def text(self) -> _StrFieldResponse:
         return self.mblog_node.get('text')
 
     @property
-    def source(self)->_StrFieldResponse:
+    def source(self) -> _StrFieldResponse:
         return self.mblog_node.get('source')
 
     @property
-    def user(self)->UserMeta:
+    def user(self) -> UserMeta:
         return UserMeta(user_node=self.mblog_node.get('user'))
 
     @property
     def retweeted_status(self):
-        return MBlogMeta(mblog_node=self.mblog_node.get('retweeted_status')) if self.mblog_node.get('retweeted_status') else None
+        return MBlogMeta(mblog_node=self.mblog_node.get('retweeted_status')) if self.mblog_node.get(
+            'retweeted_status') else None
 
     @property
-    def reposts_count(self)->_IntFieldResponse:
+    def reposts_count(self) -> _IntFieldResponse:
         return self.mblog_node.get('reposts_count')
 
     @property
-    def comments_count(self)->_IntFieldResponse:
+    def comments_count(self) -> _IntFieldResponse:
         return self.mblog_node.get('comments_count')
 
     @property
-    def obj_ext(self)->_StrFieldResponse:
+    def obj_ext(self) -> _StrFieldResponse:
         return self.mblog_node.get('obj_ext')
 
     @property
-    def raw_text(self)->_StrFieldResponse:
+    def raw_text(self) -> _StrFieldResponse:
         return self.mblog_node.get('raw_text')
 
     @property
-    def bid(self)->_StrFieldResponse:
+    def bid(self) -> _StrFieldResponse:
         return self.mblog_node.get('bid')
 
 
@@ -241,20 +242,21 @@ class TweetMeta(object):
         self.card_node = card_node
 
     @property
-    def raw_card(self)->dict:
+    def raw_card(self) -> dict:
         return self.card_node
 
     @property
-    def itemid(self)->_StrFieldResponse:
+    def itemid(self) -> _StrFieldResponse:
         return self.card_node.get('itemid')
 
     @property
-    def scheme(self)->_StrFieldResponse:
+    def scheme(self) -> _StrFieldResponse:
         return self.card_node.get('scheme')
 
     @property
-    def mblog(self)->MBlogMeta:
+    def mblog(self) -> MBlogMeta:
         return MBlogMeta(mblog_node=self.card_node.get('mblog'))
+
 
 _ListTweetMetaFieldResponse = List[TweetMeta]
 
@@ -270,6 +272,8 @@ _ListTweetMetaFieldResponse = List[TweetMeta]
             - user
                 .... 
 """
+
+
 class WeiboTweetParser(object):
     def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
         self.tweet_containerid = tweet_containerid
@@ -285,7 +289,7 @@ class WeiboTweetParser(object):
         return self.tweet_get_index_reponse.get('data').get('cardlistInfo')
 
     @property
-    def cards_node(self)->_ListTweetMetaFieldResponse:
+    def cards_node(self) -> _ListTweetMetaFieldResponse:
         return [TweetMeta(card_node=card) for card in self.tweet_get_index_reponse.get('data').get('cards')]
 
     @property
@@ -298,8 +302,6 @@ class WeiboTweetParser(object):
 
     def __repr__(self):
         return r"<WeiboTweetParser tweet_container_id = {} >".format(repr(self.tweet_containerid_node))
-
-
 
 
 class WeiboGetIndexParser(object):
@@ -333,35 +335,9 @@ class WeiboGetIndexParser(object):
         return self.get_index_api_response.get('data').get('scheme')
 
     @property
-    def uid_node(self) -> str:
-        return self.user_info_node.get('id')
-
-    @property
-    def screen_name(self) -> str:
-        return self.user_info_node.get('screen_name')
-
-    # ====== meta data
-    # profile_image_url
-    # profile_url
-    # statuses_count
-    # verified
-    # verified_type
-    # verified_type_ext
-    # verified_reason
-    # description
-    # gender
-    # mbtype
-    # urank
-    # mbrank
-    # follow_me
-    # following
-    # followers_count
-    # follow_count
-    # cover_image_phone
-    # avatar_hd
-    # like
-    # like_me
-    # ....
+    def user(self):
+        """structure is similary with user"""
+        return UserMeta(user_node=self.user_info_node)
 
     @property
     def profile_containerid(self) -> _StrFieldResponse:
@@ -406,4 +382,4 @@ class WeiboGetIndexParser(object):
             return None
 
     def __repr__(self):
-        return r"<WeiboGetIndexParser {} , {}>".format(repr(self.uid), repr(self.raw_response))
+        return r"<WeiboGetIndexParser uid={} >".format(repr(self.user.id))

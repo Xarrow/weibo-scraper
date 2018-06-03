@@ -79,6 +79,16 @@ class TestWeiboScraper(unittest.TestCase):
         self.assertIsNotNone(result_iterator)
 
 
+    def test_weibo_get_index_parser(self):
+        """
+        测试获取微博个人信息
+        :return:
+        """
+        get_inex_response = weibo_getIndex(uid_value='1111681197')
+        wgip = WeiboGetIndexParser(get_index_api_response=get_inex_response)
+        print(wgip)
+
+
     def test_weibo_parser(self):
         tweet_response =  weibo_scraper.weibo_tweets(containerid='1076031843242321',page=1)
         wp = WeiboTweetParser(tweet_get_index_response=tweet_response)
