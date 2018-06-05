@@ -51,7 +51,7 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     uid = _egu_res.get("uid")
     if exist:
         inner_tweet_containerid = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets2(tweet_container_id=inner_tweet_containerid, pages=pages)
+        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid, pages=pages)
     else:
         yield None
 
@@ -107,7 +107,6 @@ def weibo_profile(name: str=None,uid:str=None):
     :param name: name
     :return:
     """
-
     if uid is not None:
         _uid = uid
     elif name is not None:
@@ -124,7 +123,7 @@ def weibo_profile(name: str=None,uid:str=None):
     return _weibo_get_index_response_parser.user
 
 
-def get_weibo_tweets2(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
+def get_weibo_tweets_formatted(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
 
@@ -142,9 +141,6 @@ def get_weibo_tweets2(tweet_container_id: str, pages: int = None) -> _TweetsResp
     :param pages :default None
     :return
     """
-
-    # current_page_index = 1
-
     def gen(_inner_current_page=1):
         while True:
             if pages is not None and _inner_current_page > pages:
@@ -157,18 +153,7 @@ def get_weibo_tweets2(tweet_container_id: str, pages: int = None) -> _TweetsResp
                 break
             weibo_tweet_parser = WeiboTweetParser(tweet_get_index_response=_response_json)
             yield weibo_tweet_parser
-
-            # elif _response_json.get('data').get("cards")[0].get('name') == '暂无微博':
-            #     break
-            # _cards = _response_json.get('data').get("cards")
-            # for _card in _cards:
-            #     # skip recommended tweets
-            #     if _card.get("card_group"):
-            #         continue
-            #     # just yield field of mblog
-            #     yield _card
             _inner_current_page += 1
-
     yield from gen()
 
 
@@ -177,9 +162,13 @@ import time
 if __name__ == '__main__':
     startTime = time.time()
 
-    result_iterator = get_weibo_tweets_by_name(name='嘻红豆', pages=None)
-    for i in result_iterator:
-        for j in i.cards_node:
-            print(j.mblog.text)
+    # result_iterator = get_weibo_tweets_by_name(name='嘻红豆', pages=None)
+    # for i in result_iterator:
+    #     # print(i)
+    #     for j in i.cards_node:
+    #         print(j.mblog.text)
+
+    wp = weibo_profile(name='嘻绿豆')
+    print(wp)
     endTime = time.time()
     print(endTime - startTime)

@@ -172,6 +172,11 @@ class UserMeta(object):
     def avatar_hd(self) -> _StrFieldResponse:
         return self.user_node.get('avatar_hd')
 
+    def __repr__(self):
+        return "<UserMeta uid={} , screen_name={} , description={} , gender={} , avatar_hd={} ," \
+               "profile_image_url = {}>".format(repr(self.id),repr(self.screen_name),repr(self.description),repr(self.gender),
+                                                repr(self.avatar_hd),repr(self.profile_image_url))
+
 
 class MBlogMeta(object):
     def __init__(self, mblog_node):
@@ -290,7 +295,8 @@ class WeiboTweetParser(object):
 
     @property
     def cards_node(self) -> _ListTweetMetaFieldResponse:
-        return [TweetMeta(card_node=card) for card in self.tweet_get_index_reponse.get('data').get('cards')]
+        # skip  recommended weibo tweet
+        return [TweetMeta(card_node=card) for card in list(filter(lambda card:card.get('card_group') is None,self.tweet_get_index_reponse.get('data').get('cards')))]
 
     @property
     def tweet_containerid_node(self) -> _StrFieldResponse:
@@ -370,14 +376,16 @@ class WeiboGetIndexParser(object):
     @property
     def inner_tweet_id(self):
         if isinstance(self.tabs_node, list):
-            return list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid')
+            _weibo_containerid =  list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid')
+            if _weibo_containerid.__contains__('WEIBO_SECOND_PROFILE_WEIBO'):
+                return re.findall(r'(.+?)WEIBO_SECOND_PROFILE_WEIBO_PAY_BILL',list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid'))[0]
+            else:
+                return _weibo_containerid
         elif isinstance(self.tabs_node, dict):
             _response_include_tweetid = weibo_tweets(containerid=self.profile_containerid, page=0)
             _cards = _response_include_tweetid.get('data').get('cards')
             return re.findall(r'containerid=(.+?)WEIBO_SECOND',
-                              list(
-                                  filter(
-                                      lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
+                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
         else:
             return None
 
