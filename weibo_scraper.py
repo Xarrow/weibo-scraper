@@ -101,16 +101,22 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     yield from gen()
 
 
-def weibo_profile(name: str) :
+def weibo_profile(name: str=None,uid:str=None):
     """
     Get weibo profile
     :param name: name
     :return:
     """
-    _egu_response = exist_get_uid(name=name)
-    if not _egu_response.get('exist'):
+
+    if uid is not None:
+        _uid = uid
+    elif name is not None:
+        _egu_response = exist_get_uid(name=name)
+        if not _egu_response.get('exist'):
+            return None
+        _uid = _egu_response.get('uid')
+    else:
         return None
-    _uid = _egu_response.get('uid')
     _weibo_get_index_response_parser = WeiboGetIndexParser(get_index_api_response=weibo_getIndex(uid_value=_uid))
     if _weibo_get_index_response_parser.raw_response is None \
             or _weibo_get_index_response_parser.raw_response.get('data') == 0:
