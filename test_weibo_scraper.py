@@ -94,6 +94,10 @@ class TestWeiboScraper(unittest.TestCase):
         wp = WeiboTweetParser(tweet_get_index_response=tweet_response)
         print(wp)
 
+    def test_get_weibo_profile(self):
+        wp = weibo_scraper.weibo_profile(name='嘻红豆')
+        print(wp)
+
 
 
 if __name__ == '__main__':

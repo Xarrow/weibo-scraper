@@ -346,7 +346,7 @@ class WeiboGetIndexParser(object):
             return self.tabs_node.get('0').get('containerid')
         # weibo first profile api
         elif isinstance(self.tabs_node, list):
-            return list(filter(lambda item: item.tab_type == 'profile', self.tabs_node))[0]
+            return list(filter(lambda item: item.get('tab_type') == 'profile', self.tabs_node))[0].get('containerid')
         return None
 
     @property

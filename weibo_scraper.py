@@ -11,7 +11,8 @@ import datetime
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
-from weibo_base import exist_get_uid, get_tweet_containerid, weibo_tweets,WeiboTweetParser
+from weibo_base import exist_get_uid, get_tweet_containerid, weibo_tweets, weibo_getIndex, WeiboTweetParser, \
+    WeiboGetIndexParser
 
 try:
     assert sys.version_info.major == 3
@@ -99,6 +100,24 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
 
     yield from gen()
 
+
+def weibo_profile(name: str) :
+    """
+    Get weibo profile
+    :param name: name
+    :return:
+    """
+    _egu_response = exist_get_uid(name=name)
+    if not _egu_response.get('exist'):
+        return None
+    _uid = _egu_response.get('uid')
+    _weibo_get_index_response_parser = WeiboGetIndexParser(get_index_api_response=weibo_getIndex(uid_value=_uid))
+    if _weibo_get_index_response_parser.raw_response is None \
+            or _weibo_get_index_response_parser.raw_response.get('data') == 0:
+        return None
+    return _weibo_get_index_response_parser.user
+
+
 def get_weibo_tweets2(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
@@ -146,7 +165,9 @@ def get_weibo_tweets2(tweet_container_id: str, pages: int = None) -> _TweetsResp
 
     yield from gen()
 
+
 import time
+
 if __name__ == '__main__':
     startTime = time.time()
 
@@ -155,4 +176,4 @@ if __name__ == '__main__':
         for j in i.cards_node:
             print(j.mblog.text)
     endTime = time.time()
-    print(endTime-startTime)
+    print(endTime - startTime)
