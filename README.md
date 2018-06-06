@@ -116,8 +116,11 @@ You can also get formatted tweets via api of "weibo_scrapy.get_formatted_weibo_t
 ```
 
 This response if a list type of "weibo_base.WeiboTweetParser" which is more convenience to get different field .Fields in detail as below ,
+
 field|chinese|type|sample|ext
 ---|---|---|---|---
+
+
 .....
 
 
