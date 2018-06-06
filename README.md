@@ -56,14 +56,14 @@ Only Python 3.6+ is supported
 ----
 # Usage
 
-1. Firstly , you can get weibo profile by name or uid .
+1. Firstly , you can get weibo profile by `name` or `uid` .
 
 ```python
 >>> from weibo_scraper import get_weibo_profile
 >>> weibo_profile = get_weibo_profile(name='来去之间',)
 >>> ....
 ```
-You will get weibo profile response which is type of "weibo_base.UserMeta", and this response include fields as below
+You will get weibo profile response which is type of `weibo_base.UserMeta`, and this response include fields as below
 
 field|chinese|type|sample|ext
 ---|---|---|---|---
@@ -78,7 +78,7 @@ gender|性别|Option[str]|'m'/'f'|
 raw_user_response|原始返回|Option[dict]||
 
 
-2. Secondly , via tweet_container_id to get weibo tweets is a rare way to use but it also works .
+2. Secondly , via `tweet_container_id` to get weibo tweets is a rare way to use but it also works well .
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets
@@ -106,8 +106,9 @@ raw_user_response|原始返回|Option[dict]||
 >>> ....
 ```
 
-4. There are giant update since 1.0.4+ 🍰!
-You can also get formatted tweets via api of "weibo_scrapy.get_formatted_weibo_tweets_by_name",
+4. There is a giant update since 1.0.4+ 🍰!
+
+You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_tweets_by_name`,
 
 ```python
 >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
@@ -118,7 +119,9 @@ You can also get formatted tweets via api of "weibo_scrapy.get_formatted_weibo_t
 >>> ....
 ```
 
-This response if a list type of "weibo_base.WeiboTweetParser" which is more convenience to get different field .Fields in detail as below ,
+This response is a list type of `weibo_base.WeiboTweetParser` which is more convenience to get different fields .
+
+Fields in detail as below ,
 
 field|chinese|type|sample|ext
 ---|---|---|---|---
