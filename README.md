@@ -89,7 +89,7 @@ raw_user_response|原始返回|Option[dict]||
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets_by_name
->>> for tweet in get_weibo_tweets_by_name(name='来去之间', pages=1):
+>>> for tweet in get_weibo_tweets_by_name(name='嘻红豆', pages=1):
 >>>     print(tweet)
 >>> ....
 ```
@@ -98,14 +98,16 @@ raw_user_response|原始返回|Option[dict]||
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets_by_name
->>> for tweet in get_weibo_tweets_by_name(name='来去之间', pages=None):
+>>> for tweet in get_weibo_tweets_by_name(name='嘻红豆', pages=None):
 >>>     print(tweet)
 >>> ....
 ```
 
-4. There are giant update since 1.0.4+ ! You can also get formatted tweets via api of "weibo_scrapy.get_formatted_weibo_tweets_by_name",
+4. There are giant update since 1.0.4+ 🍰!
+You can also get formatted tweets via api of "weibo_scrapy.get_formatted_weibo_tweets_by_name",
 
 ```python
+>>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
 >>> result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
 >>> for user_meta in result_iterator:
 >>>     for tweetMeta in user_meta.cards_node:
@@ -113,10 +115,21 @@ raw_user_response|原始返回|Option[dict]||
 >>> ....
 ```
 
+This response if a list type of "weibo_base.WeiboTweetParser" which is more convenience to get different field .Fields in detail as below ,
+field|chinese|type|sample|ext
+---|---|---|---|---
+.....
+
 
 ![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png)
 
 ----
+
+# Weibo Flasgger
+
+
+[Weibo Flasgger](https://github.com/Xarrow/weibo-scraper/blob/search_name/samples/weibo_flasgger/FLASGGER_README.md) is a web api document for weibo scraper , and powered by flasgger .
+
 # P.S
 1. Very Thanks For [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) .
 

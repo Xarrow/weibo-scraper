@@ -60,6 +60,7 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
 def get_formatted_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     """
     Get formatted weibo tweets by nick name without any authorization
+    >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
     >>> result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
     >>> for user_meta in result_iterator:
     >>>     for tweetMeta in user_meta.cards_node:
