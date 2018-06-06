@@ -1,7 +1,10 @@
 # Weibo Scraper
 
+[![PyPI](https://img.shields.io/pypi/v/weibo-scraper.svg)](https://pypi.org/project/weibo-scraper/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/weibo-scraper.svg)](https://docs.python.org/3/whatsnew/3.6.html)
 [![Build Status](https://travis-ci.org/Xarrow/weibo-scraper.svg?branch=master)](https://travis-ci.org/Xarrow/weibo-scraper)
 [![codecov](https://codecov.io/gh/Xarrow/weibo-scraper/branch/master/graph/badge.svg)](https://codecov.io/gh/Xarrow/weibo-scraper)
+
 ----
 
 Simple weibo tweet scraper . Crawl weibo tweets without authorization.
