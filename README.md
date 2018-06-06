@@ -133,6 +133,8 @@ field|chinese|type|sample|ext
 
 [Weibo Flasgger](https://github.com/Xarrow/weibo-scraper/blob/search_name/samples/weibo_flasgger/FLASGGER_README.md) is a web api document for weibo scraper , and powered by flasgger .
 
+![img](https://raw.githubusercontent.com/rochacbruno/flasgger/master/docs/flasgger.png)
+
 # P.S
 1. Very Thanks For [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) .
 
