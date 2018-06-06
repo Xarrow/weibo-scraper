@@ -11,7 +11,7 @@ import requests
 import re
 from typing import Optional, List
 
-Response = Optional[str]
+Response = Optional[dict]
 
 _GET_INDEX = "https://m.weibo.cn/api/container/getIndex"
 

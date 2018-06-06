@@ -4,12 +4,13 @@
 [![codecov](https://codecov.io/gh/Xarrow/weibo-scraper/branch/master/graph/badge.svg)](https://codecov.io/gh/Xarrow/weibo-scraper)
 ----
 
-Simple weibo tweet scraper . Crawl weibo tweets by containedId without authorization.
+Simple weibo tweet scraper . Crawl weibo tweets without authorization.
 There are many limitations in official API .
 In general , we can inspect mobile site which has it's own API by Chrome.
 
 ----
 # Installation
+
 
 ### pip
 
@@ -52,7 +53,29 @@ Only Python 3.6+ is supported
 ----
 # Usage
 
-1. You can get weibo tweets by containerid .
+1. Firstly , you can get weibo profile by name or uid .
+
+```python
+>>> from weibo_scraper import get_weibo_profile
+>>> weibo_profile = get_weibo_profile(name='来去之间',)
+>>> ....
+```
+You will get weibo profile response which is type of "weibo_base.UserMeta", and this response include fields as below
+
+field|chinese|type|sample|ext
+---|---|---|---|---
+id|用户id|str||
+screen_name|微博昵称|str||
+avatar_hd|高清头像|str|'https://ww2.sinaimg.cn/orj480/4242e8adjw8elz58g3kyvj20c80c8myg.jpg'|
+cover_image_phone|手机版封面|str|'https://tva1.sinaimg.cn/crop.0.0.640.640.640/549d0121tw1egm1kjly3jj20hs0hsq4f.jpg'|
+description| 描述|str||
+follow_count|关注数|int|3568|
+follower_count|被关注数|int|794803|
+gender|性别|str|'m'/'f'|
+raw_user_response|原始返回|||
+
+
+2. Secondly , via tweet_container_id to get weibo tweets is a rare way to use .
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets
@@ -62,7 +85,7 @@ Only Python 3.6+ is supported
 
 ```
 
-2. You  can also get weibo tweets by nick name which is exist . And the param of `pages` is optional .
+3. You  can also get weibo tweets by nick name which is exist . And the param of `pages` is optional .
 
 ```python
 >>> from weibo_scraper import  get_weibo_tweets_by_name
@@ -98,9 +121,11 @@ So you can get result which are formatted and ordered by create time  as below.
 
 ----
 # P.S
-1. Very Thanks For [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper)
+1. Very Thanks For [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) .
 
-2. Welcome to fork me .
+2. For "嘻红豆" .
+
+2. Welcome To Fork Me .
 
 ----
 # LICENSE
