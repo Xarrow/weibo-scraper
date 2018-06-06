@@ -70,7 +70,7 @@ field|chinese|type|sample|ext
 id|用户id|str||
 screen_name|微博昵称|Option[str]||
 avatar_hd|高清头像|Option[str]|'https://ww2.sinaimg.cn/orj480/4242e8adjw8elz58g3kyvj20c80c8myg.jpg'|
-cover_image_phone|手机版封面|str]|'https://tva1.sinaimg.cn/crop.0.0.640.640.640/549d0121tw1egm1kjly3jj20hs0hsq4f.jpg'|
+cover_image_phone|手机版封面|Option[str]|'https://tva1.sinaimg.cn/crop.0.0.640.640.640/549d0121tw1egm1kjly3jj20hs0hsq4f.jpg'|
 description| 描述|Option[str]||
 follow_count|关注数|Option[int]|3568|
 follower_count|被关注数|Option[int]|794803|
