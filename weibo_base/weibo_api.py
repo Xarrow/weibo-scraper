@@ -111,7 +111,7 @@ def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
         return None
 
     weibo_get_index_parser = WeiboGetIndexParser(get_index_api_response=weibo_get_index_response)
-    return weibo_get_index_parser.inner_tweet_id
+    return weibo_get_index_parser.tweet_containerid
 
 
 # =========== Parser =====================
@@ -312,9 +312,14 @@ class WeiboTweetParser(object):
 
 class WeiboGetIndexParser(object):
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
-        self.uid = uid
-        self.get_index_api_response = weibo_getIndex(uid_value=uid) \
-            if get_index_api_response is None else get_index_api_response
+        if get_index_api_response is None and uid is None:
+            raise WeiboApiException ("In WeiboGetIndexParser , get_index_api_response and uid can not be None . ")
+        elif get_index_api_response is not None:
+            self.get_index_api_response = get_index_api_response
+            self.uid = self.user_info_node.get('id')
+        elif uid is not None:
+            self.uid = uid
+            self.get_index_api_response = weibo_getIndex(uid_value=self.uid)
 
     @property
     def raw_response(self) -> _JSONResponse:
@@ -362,7 +367,7 @@ class WeiboGetIndexParser(object):
             return self.tabs_node.get('1').get('containerid')
         # weibo first profile api
         elif isinstance(self.tabs_node, list):
-            return list(filter(lambda item: item.tab_type == 'weibo', self.tabs_node))[0]
+            return list(filter(lambda item: item.get('tab_type') == 'weibo', self.tabs_node))[0]
         return None
 
     # this property is not exist in first weibo profile api
@@ -374,7 +379,7 @@ class WeiboGetIndexParser(object):
     # https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
     # https://m.weibo.cn/api/container/getIndex?type=uid&value=1843242321
     @property
-    def inner_tweet_id(self):
+    def tweet_containerid(self):
         if isinstance(self.tabs_node, list):
             _weibo_containerid =  list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid')
             if _weibo_containerid.__contains__('WEIBO_SECOND_PROFILE_WEIBO'):
@@ -388,6 +393,13 @@ class WeiboGetIndexParser(object):
                               list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
         else:
             return None
+
+    @property
+    def follow_containerid(self):
+        return re.findall(r'lfid=(.+?$)',self.scheme_node)[0]+'_-_FANS' if self.scheme_node is not None else None
+    @property
+    def follower_containerid(self):
+        return re.findall(r'lfid=(.+?$)',self.scheme_node)[0]+'_-_FOLLOWERS' if self.scheme_node is not None else None
 
     def __repr__(self):
         return r"<WeiboGetIndexParser uid={} >".format(repr(self.user.id))

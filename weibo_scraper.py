@@ -189,18 +189,19 @@ def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
         return None
     return _weibo_get_index_response_parser.user
 
-
+# def get_weibo_follows(name:str=None,)
 import time
 
 if __name__ == '__main__':
     startTime = time.time()
-    weibo_profile = get_weibo_profile(name='来去之间',)
-
-    # result_iterator = get_formatted_weibo_tweets_by_name(name='崔永元', pages=None)
-    # for user_meta in result_iterator:
-    #     for tweetMeta in user_meta.cards_node:
-    #         print(tweetMeta.mblog.text)
+    # weibo_profile = get_weibo_profile(name='嘻红豆',)
+    # print(weibo_profile)
     #
+    result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
+    for user_meta in result_iterator:
+        for tweetMeta in user_meta.cards_node:
+            print(tweetMeta.mblog.text)
+
     # from weibo_scraper import  get_weibo_tweets_by_name
     # for tweet in get_weibo_tweets_by_name(name='崔永元', pages=None):
     #     print(tweet)
