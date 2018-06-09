@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-
+echo ">>> delete exist packing "
+rm -rf build
+rm -rf dist
+rm -rf weibo_scraper.egg-info
 echo ">>> running python setup.py sdist"
 python setup.py sdist
 echo ">>> running python setup.py bdist_wheel --universal"
