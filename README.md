@@ -10,6 +10,14 @@
 Simple weibo tweet scraper . Crawl weibo tweets without authorization.
 There are many limitations in official API .
 In general , we can inspect mobile site which has it's own API by Chrome.
+----
+
+# Why
+
+1. Crawl weibo data in order to research big data .
+
+2. Back up  data for weibo's shameful blockade . 
+
 
 ----
 # Installation
@@ -132,11 +140,11 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 ![img](https://raw.githubusercontent.com/rochacbruno/flasgger/master/docs/flasgger.png)
 
 # P.S
-1. Very Thanks For [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) .
+1. Inspiration from [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) .
 
-2. For "嘻红豆" .
+2. For 'XIHONGDOU' .
 
-2. Welcome To Fork Me .
+3. Welcome To Fork Me .
 
 ----
 # LICENSE
