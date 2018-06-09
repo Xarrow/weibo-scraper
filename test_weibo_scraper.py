@@ -94,10 +94,10 @@ class TestWeiboScraper(unittest.TestCase):
         pass
 
     def test_get_weibo_profile(self):
-        wp = weibo_scraper.weibo_profile(name='嘻红豆')
+        wp = weibo_scraper.get_weibo_profile(name='嘻红豆')
         print(wp.raw_user_response)
 
-        wp_uid = weibo_scraper.weibo_profile(uid='3637346297')
+        wp_uid = weibo_scraper.get_weibo_profile(uid='3637346297')
         print(wp_uid.raw_user_response)
 
 
