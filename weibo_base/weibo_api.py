@@ -14,6 +14,7 @@ from typing import Optional, List
 Response = Optional[dict]
 
 _GET_INDEX = "https://m.weibo.cn/api/container/getIndex"
+_GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 
 
 class WeiboApiException(Exception):
@@ -66,6 +67,34 @@ def weibo_tweets(containerid: str, page: int) -> Response:
     """
     _params = {"containerid": containerid, "page": page}
     _response = requests.get(url=_GET_INDEX, params=_params)
+    if _response.status_code == 200:
+        return _response.json()
+    return None
+
+
+def weibo_containerid(containerid: str, page: int) -> Response:
+    """
+
+    :param containerid:
+    :param page:
+    :return:
+    """
+    _params = {"containerid": containerid, "page": page}
+    _response = requests.get(url=_GET_INDEX, params=_params)
+    if _response.status_code == 200:
+        return _response.json()
+    return None
+
+
+def weibo_second(containerid: str, page: int) -> Response:
+    """
+    https://m.weibo.cn/api/container/getSecond
+    :param containerid:
+    :param page:
+    :return:
+    """
+    _params = {"containerid": containerid, "page": page}
+    _response = requests.get(url=_GET_SECOND, params=_params)
     if _response.status_code == 200:
         return _response.json()
     return None
@@ -174,8 +203,9 @@ class UserMeta(object):
 
     def __repr__(self):
         return "<UserMeta uid={} , screen_name={} , description={} , gender={} , avatar_hd={} ," \
-               "profile_image_url = {}>".format(repr(self.id),repr(self.screen_name),repr(self.description),repr(self.gender),
-                                                repr(self.avatar_hd),repr(self.profile_image_url))
+               "profile_image_url = {}>".format(repr(self.id), repr(self.screen_name), repr(self.description),
+                                                repr(self.gender),
+                                                repr(self.avatar_hd), repr(self.profile_image_url))
 
 
 class MBlogMeta(object):
@@ -296,7 +326,8 @@ class WeiboTweetParser(object):
     @property
     def cards_node(self) -> _ListTweetMetaFieldResponse:
         # skip  recommended weibo tweet
-        return [TweetMeta(card_node=card) for card in list(filter(lambda card:card.get('card_group') is None,self.tweet_get_index_reponse.get('data').get('cards')))]
+        return [TweetMeta(card_node=card) for card in list(
+            filter(lambda card: card.get('card_group') is None, self.tweet_get_index_reponse.get('data').get('cards')))]
 
     @property
     def tweet_containerid_node(self) -> _StrFieldResponse:
@@ -313,7 +344,7 @@ class WeiboTweetParser(object):
 class WeiboGetIndexParser(object):
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         if get_index_api_response is None and uid is None:
-            raise WeiboApiException ("In WeiboGetIndexParser , get_index_api_response and uid can not be None . ")
+            raise WeiboApiException("In WeiboGetIndexParser , get_index_api_response and uid can not be None . ")
         elif get_index_api_response is not None:
             self.get_index_api_response = get_index_api_response
             self.uid = self.user_info_node.get('id')
@@ -381,25 +412,78 @@ class WeiboGetIndexParser(object):
     @property
     def tweet_containerid(self):
         if isinstance(self.tabs_node, list):
-            _weibo_containerid =  list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid')
+            _weibo_containerid = list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get(
+                'containerid')
             if _weibo_containerid.__contains__('WEIBO_SECOND_PROFILE_WEIBO'):
-                return re.findall(r'(.+?)WEIBO_SECOND_PROFILE_WEIBO_PAY_BILL',list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid'))[0]
+                return re.findall(r'(.+?)WEIBO_SECOND_PROFILE_WEIBO_PAY_BILL',
+                                  list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get(
+                                      'containerid'))[0]
             else:
                 return _weibo_containerid
         elif isinstance(self.tabs_node, dict):
             _response_include_tweetid = weibo_tweets(containerid=self.profile_containerid, page=0)
             _cards = _response_include_tweetid.get('data').get('cards')
             return re.findall(r'containerid=(.+?)WEIBO_SECOND',
-                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
+                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[
+                0]
         else:
             return None
 
     @property
-    def follow_containerid(self):
-        return re.findall(r'lfid=(.+?$)',self.scheme_node)[0]+'_-_FANS' if self.scheme_node is not None else None
+    def follow_containerid_second(self):
+        return re.findall(r'lfid=(.+?$)', self.scheme_node)[0] + '_-_FANS' if self.scheme_node is not None else None
+
+    @property
+    def follower_containerid_second(self):
+        return re.findall(r'lfid=(.+?$)', self.scheme_node)[
+                   0] + '_-_FOLLOWERS' if self.scheme_node is not None else None
+
     @property
     def follower_containerid(self):
-        return re.findall(r'lfid=(.+?$)',self.scheme_node)[0]+'_-_FOLLOWERS' if self.scheme_node is not None else None
+        return re.findall(r'containerid=(.+?)&luicode', self.fans_scheme_node)[0].replace("_intimacy", "")
+
+    @property
+    def follow_containerid(self):
+        return re.findall(r'containerid=(.+?)&luicode', self.follow_scheme_node)[0].replace("recomm", "")
 
     def __repr__(self):
         return r"<WeiboGetIndexParser uid={} >".format(repr(self.user.id))
+
+
+class FollowAndFollowerParser(object):
+    def __init__(self,follow_and_follower_response:dict,follow_and_follower_containerid:str=None):
+        self.follow_and_follower_response = follow_and_follower_response
+        self.follow_and_follower_containerid = follow_and_follower_containerid if follow_and_follower_containerid is not None else self.containerid
+
+    @property
+    def raw_follow_and_follower_response(self):
+        return  self.follow_and_follower_response
+
+    @property
+    def is_validate(self):
+        if self.raw_follow_and_follower_response is None:
+            return False
+        if self.raw_follow_and_follower_response.get('ok')==0:
+            return False
+        return True
+
+    @property
+    def data_node(self):
+        return self.raw_follow_and_follower_response.get('data') if self.is_validate else None
+
+    @property
+    def count(self):
+        return self.data_node.get('count') if self.data_node is not None else None
+
+    @property
+    def user_list(self):
+        if self.data_node is None:
+            return None
+        return [UserMeta(user_node=card.get('user')) for card in self.data_node.get('cards')]
+
+    @property
+    def containerid(self):
+        return self.raw_follow_and_follower_response.get('data').get('cardlistInfo').get('containerid')
+
+    def __repr__(self):
+        return "<FollowAndFollowerParser container={} >".format(repr(self.containerid))

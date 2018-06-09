@@ -12,7 +12,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
 from weibo_base import exist_get_uid, \
-    get_tweet_containerid, weibo_tweets, weibo_getIndex, UserMeta, WeiboTweetParser, WeiboGetIndexParser
+    get_tweet_containerid, weibo_tweets, weibo_getIndex, weibo_second, UserMeta, WeiboTweetParser, WeiboGetIndexParser, \
+    FollowAndFollowerParser
 
 try:
     assert sys.version_info.major == 3
@@ -24,10 +25,10 @@ now = datetime.datetime.now()
 CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
 CURRENT_YEAR = now.strftime('%Y')
 CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
-pool = ThreadPoolExecutor(100)
 
 _TweetsResponse = Optional[Iterator[dict]]
 _UserMetaResponse = Optional[UserMeta]
+_WeiboGetIndexResponse = Optional[WeiboGetIndexParser]
 
 
 class WeiBoScraperException(Exception):
@@ -164,15 +165,12 @@ def get_weibo_tweets_formatted(tweet_container_id: str, pages: int = None) -> _T
     yield from gen()
 
 
-def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
+def weibo_get_index_parser(name: str = None, uid: str = None) -> _WeiboGetIndexResponse:
     """
-    Get weibo profile
-    >>> from weibo_scraper import get_weibo_profile
-    >>> weibo_profile = get_weibo_profile(name='嘻红豆',)
-    >>> ...weibo_profile
-    :param uid: uid
-    :param name: name
-    :return: UserMeta
+    Get weibo get index parser
+    :param name:  name
+    :param uid:  uid
+    :return: _WeiboGetIndexResponse
     """
     if uid is not None:
         _uid = uid
@@ -187,4 +185,93 @@ def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
     if _weibo_get_index_response_parser.raw_response is None \
             or _weibo_get_index_response_parser.raw_response.get('data') == 0:
         return None
-    return _weibo_get_index_response_parser.user
+    return _weibo_get_index_response_parser
+
+
+def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
+    """
+    Get weibo profile
+    >>> from weibo_scraper import get_weibo_profile
+    >>> weibo_profile = get_weibo_profile(name='嘻红豆',)
+    >>> ...weibo_profile
+    :param uid: uid
+    :param name: name
+    :return: UserMeta
+    """
+    weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid)
+    return weibo_get_index_parser_response.user if weibo_get_index_parser_response is not None else None
+
+
+def get_follows_and_followers(name: str = None, uid: str = None, pages: int = None, ):
+    """
+    Get follows and followers by name or uid limit by pages
+    :param name:
+    :param uid:
+    :param pages:
+    :return:
+    """
+
+    def gen_follows_and_followers(_inner_current_page=1, _total_items=0):
+        while True:
+            # stop max pages
+            if pages is not None and _inner_current_page > pages:
+                break
+            _weibo_follows_and_followers_second_response = weibo_second(
+                containerid=weibo_get_index_parser_response.follow_containerid_second,
+                page=_inner_current_page)
+            # skip bad request
+            if _weibo_follows_and_followers_second_response is None:
+                continue
+            # stop end page
+            if _weibo_follows_and_followers_second_response.get('ok') == 0:
+                break
+            _follow_and_follower_parser = FollowAndFollowerParser(
+                follow_and_follower_response=_weibo_follows_and_followers_second_response)
+            yield _follow_and_follower_parser
+            _inner_current_page += 1
+
+    weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid)
+    if weibo_get_index_parser_response is None:
+        yield None
+    else:
+        yield from gen_follows_and_followers()
+
+
+def get_follows(name: str = None, uid: str = None, pages: int = None, max_pages_limit: int = None):
+    """
+
+    :param name:
+    :param uid:
+    :param pages:
+    :param max_pages_limit:
+    :return:
+    """
+    follows_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages)
+    if follows_iterator is None:
+        return None
+    def _handle_max_pages_limit(current_total_pages=0):
+        for follow in follows_iterator:
+            for user in follow.user_list:
+                if max_pages_limit is not None and current_total_pages >= max_pages_limit:
+                    return
+                yield user
+                current_total_pages += 1
+    yield from _handle_max_pages_limit()
+
+
+def get_followers(name: str = None):
+    """
+    Get weibo follower by name, 粉丝
+    XIHONGDOU's fans
+    https://m.weibo.cn/api/container/getIndex?containerid=231051_-_followers_-_3637346297&page=0
+    https://m.weibo.cn/api/container/getSecond?containerid=1005053637346297_-_FOLLOWERS&page=0
+
+    :param name:
+    :return:
+    """
+    pass
+
+
+if __name__ == '__main__':
+    for user in get_follows(name='嘻红豆',max_pages_limit=40):
+        print(user.raw_user_response)
