@@ -7,8 +7,10 @@ from setuptools import find_packages, setup, Command
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with io.open(os.path.join(here,'README.md'),encoding='UTF-8') as f:
-    long_description = '\n'+f.read()
+with io.open(os.path.join(here, 'README.md'), encoding='UTF-8') as f:
+    long_description = '\n' + f.read()
+
+
 class UploadCommand(Command):
     """Support setup.py upload."""
 
@@ -42,10 +44,9 @@ class UploadCommand(Command):
         sys.exit()
 
 
-
 setup(
     version="1.0.5",
-    long_description = long_description,
+    long_description=long_description,
     long_description_content_type="text/markdown",
     name="weibo-scraper",
     url="https://github.com/Xarrow/weibo-scraper",
@@ -61,10 +62,13 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
-    install_requires = ['requests'],
+    install_requires=['requests'],
     keywords="weibo scraper crawl",
     # If your package is a single module, use this instead of 'packages':
-    py_modules = ['weibo_scraper'],
+    py_modules=['weibo_scraper'],
+    # If your package has custom module ,
+    # Full list :https://docs.python.org/3.6/distutils/setupscript.html
+    packages=['weibo_base'],
     python_requires='>=3.6',
     # $ setup.py publish support.
     cmdclass={
