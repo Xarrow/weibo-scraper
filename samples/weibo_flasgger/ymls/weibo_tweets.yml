@@ -1,0 +1,22 @@
+微博基础API - 微博查询
+微博查询
+---
+tags:
+  - 微博基础API接口
+parameters:
+  - name: containerid
+    in: path
+    type: string
+    default: 1076031843242321
+    required: true
+    description: containerid
+  - name: page
+    in: path
+    type: string
+    default: 1
+    require: true
+    description: page
+response:
+  200:
+    description: 成功返回
+swagger: 2.0

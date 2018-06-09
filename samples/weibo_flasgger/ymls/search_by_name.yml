@@ -1,0 +1,16 @@
+微博基础API - 用户名查询
+微博用户名查询
+---
+tags:
+  - 微博基础API接口
+parameters:
+  - name: name
+    in: path
+    type: string
+    default: Helixcs
+    required: true
+    description: 微博用户名
+response:
+  200:
+    description: 成功返回
+swagger: 2.0

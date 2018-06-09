@@ -1,0 +1,15 @@
+微博组件API —— 查询用户微博内容 containerid
+查询用户微博 containerid
+---
+tags:
+  - 微博组件 API 接口
+parameters:
+  - name: uid
+    in: path
+    type: string
+    default: 1843242321
+    require: true
+    description: uid
+reponse:
+  200:
+    description: 成功返回

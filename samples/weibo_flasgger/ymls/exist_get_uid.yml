@@ -1,0 +1,28 @@
+微博组件API —— 查询用户uid
+查询用户uid
+---
+tags:
+  - 微博组件 API 接口
+parameters:
+  - name: name
+    in: path
+    type: string
+    default: 嘻红豆
+    require: true
+    description: 微博用户名
+definitions:
+  UidResult:
+    type: object
+    properties:
+      exist:
+        type: boolean
+      name:
+        type: string
+      uid:
+        type: integer
+reponse:
+  200:
+    description: 成功返回
+    schema:
+      $ref: '#/definitions/UidResult'
+    example: {'exist': True, 'name': '嘻红豆', 'uid': 3637346297}
