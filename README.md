@@ -106,7 +106,7 @@ raw_user_response|原始返回|Option[dict]||
 >>> ....
 ```
 
-4. There is a giant update since 1.0.4+ 🍰!
+4. There is a giant update since 1.0.5 🍰!
 
 You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_tweets_by_name`,
 
@@ -118,16 +118,6 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 >>>         print(tweetMeta.mblog.text)
 >>> ....
 ```
-
-This response is a list type of `weibo_base.WeiboTweetParser` which is more convenience to get different fields .
-
-Fields in detail as below ,
-
-field|chinese|type|sample|ext
----|---|---|---|---
-
-
-.....
 
 
 ![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png)
