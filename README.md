@@ -115,7 +115,7 @@ raw_user_response|原始返回|Option[dict]||
 >>> ....
 ```
 
-4. There is a giant update since 1.0.5 🍰!
+4. There is a giant update since 1.0.6 🍰!
 
 You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_tweets_by_name`,
 
