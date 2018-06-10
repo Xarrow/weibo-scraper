@@ -202,9 +202,10 @@ def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
     return weibo_get_index_parser_response.user if weibo_get_index_parser_response is not None else None
 
 
-def get_follows_and_followers(name: str = None, uid: str = None, pages: int = None, ):
+def get_follows_and_followers(name: str = None, uid: str = None, pages: int = None, invoke_flag: int = 0):
     """
     Get follows and followers by name or uid limit by pages
+    :param invoke_flag: 0-follow , 1-follower
     :param name:
     :param uid:
     :param pages:
@@ -216,9 +217,14 @@ def get_follows_and_followers(name: str = None, uid: str = None, pages: int = No
             # stop max pages
             if pages is not None and _inner_current_page > pages:
                 break
-            _weibo_follows_and_followers_second_response = weibo_second(
-                containerid=weibo_get_index_parser_response.follow_containerid_second,
-                page=_inner_current_page)
+            if invoke_flag == 0:
+                _weibo_follows_and_followers_second_response = weibo_second(
+                    containerid=weibo_get_index_parser_response.follow_containerid_second,
+                    page=_inner_current_page)
+            else:
+                _weibo_follows_and_followers_second_response = weibo_second(
+                    containerid=weibo_get_index_parser_response.follower_containerid_second,
+                    page=_inner_current_page)
             # skip bad request
             if _weibo_follows_and_followers_second_response is None:
                 continue
@@ -237,41 +243,52 @@ def get_follows_and_followers(name: str = None, uid: str = None, pages: int = No
         yield from gen_follows_and_followers()
 
 
-def get_follows(name: str = None, uid: str = None, pages: int = None, max_pages_limit: int = None):
+def get_follows(name: str = None, uid: str = None, pages: int = None, max_entry_limit: int = None):
     """
 
+    :param max_entry_limit:
     :param name:
     :param uid:
     :param pages:
     :param max_pages_limit:
     :return:
     """
+    current_total_pages = 0
     follows_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages)
-    if follows_iterator is None:
-        return None
-    def _handle_max_pages_limit(current_total_pages=0):
-        for follow in follows_iterator:
+    for follow in follows_iterator:
+        if follow is None:
+            yield None
+        else:
             for user in follow.user_list:
-                if max_pages_limit is not None and current_total_pages >= max_pages_limit:
+                if max_entry_limit is not None and current_total_pages >= max_entry_limit:
                     return
                 yield user
                 current_total_pages += 1
-    yield from _handle_max_pages_limit()
 
 
-def get_followers(name: str = None):
+def get_followers(name: str = None, uid: str = None, pages: int = None, max_entry_limit: int = None):
     """
     Get weibo follower by name, 粉丝
     XIHONGDOU's fans
     https://m.weibo.cn/api/container/getIndex?containerid=231051_-_followers_-_3637346297&page=0
     https://m.weibo.cn/api/container/getSecond?containerid=1005053637346297_-_FOLLOWERS&page=0
 
+    :param max_entry_limit:
+    :param pages:
+    :param uid:
     :param name:
     :return:
+
     """
-    pass
+    current_total_pages = 0
+    followers_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages,invoke_flag=1)
+    for follower in followers_iterator:
+        if follower is None:
+            yield None
+        else:
+            for user in follower.user_list:
+                if max_entry_limit is not None and current_total_pages >= max_entry_limit:
+                    return
+                yield user
+                current_total_pages += 1
 
-
-if __name__ == '__main__':
-    for user in get_follows(name='嘻红豆',max_pages_limit=40):
-        print(user.raw_user_response)

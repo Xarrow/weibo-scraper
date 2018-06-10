@@ -123,8 +123,9 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
 >>> result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
 >>> for user_meta in result_iterator:
->>>     for tweetMeta in user_meta.cards_node:
->>>         print(tweetMeta.mblog.text)
+>>>     if user_meta is not None:
+>>>         for tweetMeta in user_meta.cards_node:
+>>>             print(tweetMeta.mblog.text)
 >>> ....
 ```
 
