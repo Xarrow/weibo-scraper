@@ -19,20 +19,41 @@ logging.basicConfig(level=level, format=format, datefmt=datefmt)
 logger = logging.getLogger(__name__)
 
 
-@contextmanager
-def open_file(file_name: str = r'template/1.html'):
-    file = open(file=file_name, mode='wb+')
-    yield file
-    file.flush()
-    file.close()
+class BaseAction(object):
+    def execute(self):
+        pass
+
+class TweetsPersistence(object):
+    def __init__(self, action: BaseAction):
+        self.action = action
+
+    def persistence(self):
+        self.action.execute()
 
 
-tweets_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
-for tweet_parser in tweets_iterator:
-    for tweetMeta in tweet_parser.cards_node:
-        with open_file() as f:
-            f.write(tweetMeta.mblog.text.encode("utf-8"))
-        print(tweetMeta.mblog.text)
+class FilePersistence(BaseAction):
+    def execute(self):
+        print("file execute")
+
+
+filePst = FilePersistence()
+tPst = TweetsPersistence(action=filePst)
+tPst.persistence()
+
+# @contextmanager
+# def open_file(file_name: str = r'template/1.html'):
+#     file = open(file=file_name, mode='wb+')
+#     yield file
+#     file.flush()
+#     file.close()
+#
+#
+# tweets_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
+# for tweet_parser in tweets_iterator:
+#     for tweetMeta in tweet_parser.cards_node:
+#         with open_file() as f:
+#             f.write(tweetMeta.mblog.text.encode("utf-8"))
+#         print(tweetMeta.mblog.text)
 
 
 # def get_weibo_follows(name:str=None,)
