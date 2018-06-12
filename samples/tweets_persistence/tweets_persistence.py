@@ -6,6 +6,7 @@
  Site: https://iliangqunru.bitcron.com/
  File: tweets_persistence.py
  Time: 6/9/18
+ Reference : https://www.toptal.com/python/python-design-patterns
 """
 import logging
 from contextlib import contextmanager
