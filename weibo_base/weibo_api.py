@@ -208,6 +208,24 @@ class UserMeta(object):
                                                 repr(self.avatar_hd), repr(self.profile_image_url))
 
 
+class PicMeta(object):
+    def __init__(self,pic_node:dict)->None:
+        self.pic_node = pic_node
+
+    @property
+    def raw_pics(self)->_JSONResponse:
+        return self.pic_node
+    @property
+    def pid(self)->_StrFieldResponse:
+        return self.pic_node.get('pid') if self.pic_node.get('pid') is not None else None
+    @property
+    def url(self)->_StrFieldResponse:
+        return self.pic_node.get("url") if self.pic_node.get("url") is not None else None
+    @property
+    def large_url(self)->_StrFieldResponse:
+        return self.pic_node.get('large').get('url') if self.pic_node.get('large') is not  None else None
+
+
 class MBlogMeta(object):
     def __init__(self, mblog_node):
         self.mblog_node = mblog_node
@@ -268,6 +286,10 @@ class MBlogMeta(object):
     @property
     def bid(self) -> _StrFieldResponse:
         return self.mblog_node.get('bid')
+    @property
+    def pics_node(self):
+        return [PicMeta(pic) for pic in self.mblog_node.get('pics')] if self.mblog_node.get('pics') is not None else None
+
 
 
 class TweetMeta(object):
