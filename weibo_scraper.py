@@ -203,7 +203,13 @@ def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
     return weibo_get_index_parser_response.user if weibo_get_index_parser_response is not None else None
 
 
-def get_follows_and_followers(name: str = None, uid: str = None, pages: int = None, invoke_flag: int = 0):
+FOLLOWER_FLAG = 1
+
+FOLLOW_FLAG = 0
+
+
+def get_follows_and_followers(name: str = None, uid: str = None, pages: int = None, invoke_flag: int = FOLLOW_FLAG):
+
     """
     Get follows and followers by name or uid limit by pages
     :param invoke_flag: 0-follow , 1-follower
@@ -218,7 +224,7 @@ def get_follows_and_followers(name: str = None, uid: str = None, pages: int = No
             # stop max pages
             if pages is not None and _inner_current_page > pages:
                 break
-            if invoke_flag == 0:
+            if invoke_flag == FOLLOW_FLAG:
                 _weibo_follows_and_followers_second_response = weibo_second(
                     containerid=weibo_get_index_parser_response.follow_containerid_second,
                     page=_inner_current_page)
@@ -293,6 +299,11 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_entr
                 yield user
                 current_total_pages += 1
 
+
+# -------------------- simplify method name ----------------
+
+def formated_tweets_by_name(*args,**kwargs):
+    pass
 
 def cli():
     """ cli """
