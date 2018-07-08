@@ -58,30 +58,6 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
         yield None
 
 
-def get_formatted_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
-    """
-    Get formatted weibo tweets by nick name without any authorization
-    >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
-    >>> result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
-    >>> for user_meta in result_iterator:
-    >>>     for tweetMeta in user_meta.cards_node:
-    >>>         print(tweetMeta.mblog.text)
-    :param name: nick name which you want to search
-    :param pages: pages ,default all pages
-    :return:  _TweetsResponse
-    """
-    if name == '':
-        raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
-    _egu_res = exist_get_uid(name=name)
-    exist = _egu_res.get("exist")
-    uid = _egu_res.get("uid")
-    if exist:
-        inner_tweet_containerid = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid, pages=pages)
-    else:
-        yield None
-
-
 def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
@@ -129,7 +105,32 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     yield from gen()
 
 
+def get_formatted_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
+    """
+    Get formatted weibo tweets by nick name without any authorization
+    >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
+    >>> result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
+    >>> for user_meta in result_iterator:
+    >>>     for tweetMeta in user_meta.cards_node:
+    >>>         print(tweetMeta.mblog.text)
+    :param name: nick name which you want to search
+    :param pages: pages ,default all pages
+    :return:  _TweetsResponse
+    """
+    if name == '':
+        raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
+    _egu_res = exist_get_uid(name=name)
+    exist = _egu_res.get("exist")
+    uid = _egu_res.get("uid")
+    if exist:
+        inner_tweet_containerid = get_tweet_containerid(uid=uid)
+        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid, pages=pages)
+    else:
+        yield None
+
+
 def get_weibo_tweets_formatted(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
+
     """
     Get weibo formatted tweets
 
@@ -291,4 +292,13 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_entr
                     return
                 yield user
                 current_total_pages += 1
+
+
+def cli():
+    """ cli """
+    pass
+
+
+if __name__ == '__main__':
+    cli()
 
