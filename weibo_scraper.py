@@ -9,6 +9,7 @@
 
 import datetime
 import sys
+from docopt import docopt
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
 from weibo_base import exist_get_uid, \
@@ -305,11 +306,28 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_entr
 def formated_tweets_by_name(*args,**kwargs):
     pass
 
+
 def cli():
-    """ cli """
+    """weibo-cli"""
+    cli_doc = """
+    Weibo-Scraper 🚀
+
+Usage:
+    test
+    pass
+Options:
+  -h --help     Show this screen.
+Supported Formats:
+   pass
+Query Parameters:
+    pass
+Notes:
+    pass
+    """
+    arguments = docopt(cli_doc)
+    # print(arguments)
     pass
 
 
 if __name__ == '__main__':
     cli()
-
