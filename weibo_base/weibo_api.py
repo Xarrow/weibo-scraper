@@ -209,24 +209,29 @@ class UserMeta(object):
 
 
 class PicMeta(object):
-    def __init__(self,pic_node:dict)->None:
+    def __init__(self, pic_node: dict) -> None:
         self.pic_node = pic_node
 
     @property
-    def raw_pics(self)->_JSONResponse:
+    def raw_pics(self) -> _JSONResponse:
         return self.pic_node
+
     @property
-    def pid(self)->_StrFieldResponse:
+    def pid(self) -> _StrFieldResponse:
         return self.pic_node.get('pid') if self.pic_node.get('pid') is not None else None
+
     @property
-    def url(self)->_StrFieldResponse:
+    def url(self) -> _StrFieldResponse:
         return self.pic_node.get("url") if self.pic_node.get("url") is not None else None
+
     @property
-    def large_url(self)->_StrFieldResponse:
-        return self.pic_node.get('large').get('url') if self.pic_node.get('large') is not  None else None
+    def large_url(self) -> _StrFieldResponse:
+        return self.pic_node.get('large').get('url') if self.pic_node.get('large') is not None else None
 
 
 class MBlogMeta(object):
+    __slots__ = ['mblog_node']
+
     def __init__(self, mblog_node):
         self.mblog_node = mblog_node
 
@@ -286,14 +291,17 @@ class MBlogMeta(object):
     @property
     def bid(self) -> _StrFieldResponse:
         return self.mblog_node.get('bid')
+
     @property
     def pics_node(self):
-        return [PicMeta(pic) for pic in self.mblog_node.get('pics')] if self.mblog_node.get('pics') is not None else None
-
+        return [PicMeta(pic) for pic in self.mblog_node.get('pics')] if self.mblog_node.get(
+            'pics') is not None else None
 
 
 class TweetMeta(object):
     """ weibo tweet meta data"""
+
+    __slots__ = ['card_node']
 
     def __init__(self, card_node: dict) -> None:
         self.card_node = card_node
@@ -332,6 +340,8 @@ _ListTweetMetaFieldResponse = List[TweetMeta]
 
 
 class WeiboTweetParser(object):
+    __slots__ = ['tweet_containerid','tweet_get_index_reponse']
+
     def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
         self.tweet_containerid = tweet_containerid
         self.tweet_get_index_reponse = weibo_tweets(containerid=tweet_containerid) \
@@ -364,6 +374,8 @@ class WeiboTweetParser(object):
 
 
 class WeiboGetIndexParser(object):
+    __slots__ = ['get_index_api_response','uid']
+
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         if get_index_api_response is None and uid is None:
             raise WeiboApiException("In WeiboGetIndexParser , get_index_api_response and uid can not be None . ")
@@ -473,19 +485,21 @@ class WeiboGetIndexParser(object):
 
 
 class FollowAndFollowerParser(object):
-    def __init__(self,follow_and_follower_response:dict,follow_and_follower_containerid:str=None):
+    __slots__ = ['follow_and_follower_response', 'follow_and_follower_containerid']
+
+    def __init__(self, follow_and_follower_response: dict, follow_and_follower_containerid: str = None):
         self.follow_and_follower_response = follow_and_follower_response
         self.follow_and_follower_containerid = follow_and_follower_containerid if follow_and_follower_containerid is not None else self.containerid
 
     @property
     def raw_follow_and_follower_response(self):
-        return  self.follow_and_follower_response
+        return self.follow_and_follower_response
 
     @property
     def is_validate(self):
         if self.raw_follow_and_follower_response is None:
             return False
-        if self.raw_follow_and_follower_response.get('ok')==0:
+        if self.raw_follow_and_follower_response.get('ok') == 0:
             return False
         return True
 
