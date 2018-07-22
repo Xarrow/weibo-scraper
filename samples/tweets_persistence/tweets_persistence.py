@@ -106,7 +106,7 @@ class JSONPersistence(BaseAction):
 
 
 # filePst = FilePersistence()
-jsonPst = JSONPersistence(name=None, pages=None)
+jsonPst = JSONPersistence(name='嘻红豆', pages=1)
 # jsonPst.execute()
 tPst = TweetsPersistence(action=jsonPst)
-tPst.persistence(pages=1)
+tPst.persistence()
