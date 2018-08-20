@@ -12,6 +12,7 @@ import logging
 from contextlib import contextmanager
 import time
 import os
+import pickle
 
 from weibo_scraper import get_formatted_weibo_tweets_by_name
 
@@ -39,13 +40,39 @@ def open_file(file_name: str):
 
 
 class BaseAction(object):
-    def __init__(self,name:str,pages:int=None):
+    def __init__(self,
+                 name: str,
+                 pages: int = None,
+                 export_file_path: str = None,
+                 export_file_name: str = None,
+                 export_file_suffix: str = None,
+                 is_simplify: bool = None):
+        """
+        BaseAction
+        :param name:                weibo name which wants to search and persistence
+        :param pages:               max pages which requests
+        :param export_file_path:    export file path
+        :param export_file_name:    export file name
+        :param export_file_suffix:  export file suffix , examples : txt , sql , html
+        :param is_simplify:         whether export pure weibo tweets
+        """
         if name is None or name == '':
-            raise WeiboScraperPersistenceException("JSON persistence need param of 'name' which you want to search!")
+            raise WeiboScraperPersistenceException("persistence need param of 'name' which you want to search!")
+
         self.name = name
         self.pages = pages
+        self.export_file_path = export_file_path or DEFAULT_EXPORT_PATH
+        self.export_file_name = export_file_name or DEFAULT_EXPORT_FILENAME
+        self.export_file_suffix = export_file_suffix or "txt"
+        self.export_file_suffix = "." + self.export_file_suffix if not self.export_file_suffix.startswith(
+            ".") else self.export_file_suffix
+        # reset export_file_name
+        # sample as "嘻红豆_export_1534784328.json"
+        self.export_file_name = self.name + "_" + self.export_file_name + self.export_file_suffix
+        self.is_simplfy = True if is_simplify is None else is_simplify
 
     def execute(self, *args, **kwargs):
+        # 父类执行
         pass
 
 
@@ -58,9 +85,41 @@ class TweetsPersistence(object):
         self.action.execute(*args, **kwargs)
 
 
+# -------------------------- implement ------------------------
+
+class HTMLPersistence(BaseAction):
+    """ export as html file """
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "json",
+                 is_simplify:bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+
+
+
 class FilePersistence(BaseAction):
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "txt",
+                 is_simplify:bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+
     def execute(self):
-        with open_file(file_name='template/小麻花就是我啊.html') as f:
+        with open_file(file_name='template/weibo_scraper_index.html') as f:
             tweets_iterator = get_formatted_weibo_tweets_by_name(name='小麻花就是我啊', pages=None)
             for tweet_parser in tweets_iterator:
                 for tweetMeta in tweet_parser.cards_node:
@@ -87,26 +146,41 @@ class JSONPersistence(BaseAction):
     """ export as JSON"""
 
     def __init__(self,
-                 export_file_path: str = DEFAULT_EXPORT_PATH,
-                 export_file_name: str = DEFAULT_EXPORT_FILENAME + '.json',
                  name: str = None,
-                 pages: int = None, ) -> None:
-        super().__init__(name,pages)
-        self.export_file_path = export_file_path
-        self.export_file_name = self.name + "_" + export_file_name
+                 pages: int = None,
+                 export_file_suffix: str = "json",
+                 is_simplify:bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
 
     def execute(self, *args, **kwargs):
+        # 重写父类 execute
+        #  override
         with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as json_file:
             tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
             for tweets_parser in tweets_iterator:
                 for tweet_meta in tweets_parser.cards_node:
-                    json_file.write(bytes(str(tweet_meta.raw_card), encoding='utf-8'))
+                    if self.is_simplfy:
+                        single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                      "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                      "text: " + tweet_meta.mblog.text + "\t\t"
+                        if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                            single_line += "pics: "
+                            for pic in tweet_meta.mblog.pics_node:
+                                single_line = single_line + pic.large_url + "\t\t"
+                    else:
+                        single_line = str(tweet_meta.raw_card)
+                    json_file.write(bytes(single_line, encoding='utf-8'))
                     json_file.write(bytes('\t\t\n', encoding='utf-8'))
         pass
 
 
 # filePst = FilePersistence()
-jsonPst = JSONPersistence(name='嘻红豆', pages=1)
+jsonPst = JSONPersistence(name='嘻红豆', pages=None,is_simplify=False)
 # jsonPst.execute()
 tPst = TweetsPersistence(action=jsonPst)
 tPst.persistence()

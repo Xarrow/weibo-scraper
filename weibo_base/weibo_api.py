@@ -9,7 +9,14 @@
 
 import requests
 import re
+import datetime
 from typing import Optional, List
+
+
+now = datetime.datetime.now()
+CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
+CURRENT_YEAR = now.strftime('%Y')
+CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
 
 Response = Optional[dict]
 
@@ -241,7 +248,14 @@ class MBlogMeta(object):
 
     @property
     def created_at(self) -> _StrFieldResponse:
-        return self.mblog_node.get('created_at')
+        created_at = self.mblog_node.get('created_at')
+        # sample as "08-01" -> "2018-08-01"
+        if len(created_at) < 9 and "-" in created_at:
+            created_at = CURRENT_YEAR + "-" + created_at
+        # sample as "几分钟"
+        if not str(created_at).__contains__("-"):
+            created_at = CURRENT_YEAR_WITH_DATE
+        return created_at
 
     @property
     def id(self) -> _StrFieldResponse:
