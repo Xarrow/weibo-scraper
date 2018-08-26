@@ -157,7 +157,33 @@ class JSONPersistence(BaseAction):
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
-    def execute(self, *args, **kwargs):
+    def fetch_data(self,*args,**kwargs):
+        tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
+        for tweets_parser in tweets_iterator:
+            for tweet_meta in tweets_parser.cards_node:
+                yield tweet_meta
+
+    # more faster
+    # 1.2 sec
+    def execute(self):
+        with open_file(file_name=os.path.join(self.export_file_path,self.export_file_name)) as json_file:
+            for tweet_meta in self.fetch_data():
+                if self.is_simplfy:
+                    single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                  "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                  "text: " + tweet_meta.mblog.text + "\t\t"
+                    if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                        single_line += "pics: "
+                        for pic in tweet_meta.mblog.pics_node:
+                            single_line = single_line + pic.large_url + "\t\t"
+                else:
+                    single_line = str(tweet_meta.raw_card)
+                json_file.write(bytes(single_line, encoding='utf-8'))
+                json_file.write(bytes('\t\t\n', encoding='utf-8'))
+
+
+
+    def execute1(self, *args, **kwargs):
         # 重写父类 execute
         #  override
         with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as json_file:
@@ -179,8 +205,11 @@ class JSONPersistence(BaseAction):
         pass
 
 
+start_time = time.time()
 # filePst = FilePersistence()
-jsonPst = JSONPersistence(name='嘻红豆', pages=None,is_simplify=False)
+jsonPst = JSONPersistence(name='Linux中国', pages=30,is_simplify=True)
 # jsonPst.execute()
 tPst = TweetsPersistence(action=jsonPst)
 tPst.persistence()
+end_time = time.time()
+logger.info("%s",(end_time-start_time))

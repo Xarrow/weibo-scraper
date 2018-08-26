@@ -13,3 +13,4 @@ six==1.11.0
 tqdm==4.23.3
 twine==1.11.0
 urllib3==1.22
+docopt==0.6.2
