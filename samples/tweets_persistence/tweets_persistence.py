@@ -71,6 +71,9 @@ class BaseAction(object):
         self.export_file_name = self.name + "_" + self.export_file_name + self.export_file_suffix
         self.is_simplfy = True if is_simplify is None else is_simplify
 
+    def fetch_data(self, *args, **kwargs):
+        pass
+
     def execute(self, *args, **kwargs):
         # 父类执行
         pass
@@ -86,22 +89,27 @@ class TweetsPersistence(object):
 
 
 # -------------------------- implement ------------------------
+def fetch_weibo_tweets_content(self, ):
+    tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
+    for tweets_parser in tweets_iterator:
+        for tweet_meta in tweets_parser.cards_node:
+            yield tweet_meta
+
 
 class HTMLPersistence(BaseAction):
     """ export as html file """
+
     def __init__(self,
                  name: str = None,
                  pages: int = None,
                  export_file_suffix: str = "json",
-                 is_simplify:bool = False) -> None:
+                 is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
                          export_file_path=None,
                          export_file_name=None,
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
-
-
 
 
 class FilePersistence(BaseAction):
@@ -109,14 +117,13 @@ class FilePersistence(BaseAction):
                  name: str = None,
                  pages: int = None,
                  export_file_suffix: str = "txt",
-                 is_simplify:bool = False) -> None:
+                 is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
                          export_file_path=None,
                          export_file_name=None,
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
-
 
     def execute(self):
         with open_file(file_name='template/weibo_scraper_index.html') as f:
@@ -149,7 +156,7 @@ class JSONPersistence(BaseAction):
                  name: str = None,
                  pages: int = None,
                  export_file_suffix: str = "json",
-                 is_simplify:bool = False) -> None:
+                 is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
                          export_file_path=None,
@@ -157,16 +164,13 @@ class JSONPersistence(BaseAction):
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
-    def fetch_data(self,*args,**kwargs):
-        tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
-        for tweets_parser in tweets_iterator:
-            for tweet_meta in tweets_parser.cards_node:
-                yield tweet_meta
+    def fetch_data(self, ):
+        yield from fetch_weibo_tweets_content(self)
 
     # more faster
     # 1.2 sec
     def execute(self):
-        with open_file(file_name=os.path.join(self.export_file_path,self.export_file_name)) as json_file:
+        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as json_file:
             for tweet_meta in self.fetch_data():
                 if self.is_simplfy:
                     single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
@@ -182,34 +186,11 @@ class JSONPersistence(BaseAction):
                 json_file.write(bytes('\t\t\n', encoding='utf-8'))
 
 
-
-    def execute1(self, *args, **kwargs):
-        # 重写父类 execute
-        #  override
-        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as json_file:
-            tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
-            for tweets_parser in tweets_iterator:
-                for tweet_meta in tweets_parser.cards_node:
-                    if self.is_simplfy:
-                        single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
-                                      "source: " + tweet_meta.mblog.source + "\t\t" + \
-                                      "text: " + tweet_meta.mblog.text + "\t\t"
-                        if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
-                            single_line += "pics: "
-                            for pic in tweet_meta.mblog.pics_node:
-                                single_line = single_line + pic.large_url + "\t\t"
-                    else:
-                        single_line = str(tweet_meta.raw_card)
-                    json_file.write(bytes(single_line, encoding='utf-8'))
-                    json_file.write(bytes('\t\t\n', encoding='utf-8'))
-        pass
-
-
 start_time = time.time()
 # filePst = FilePersistence()
-jsonPst = JSONPersistence(name='Linux中国', pages=30,is_simplify=True)
+jsonPst = JSONPersistence(name='Linux中国', pages=30, is_simplify=True)
 # jsonPst.execute()
 tPst = TweetsPersistence(action=jsonPst)
 tPst.persistence()
 end_time = time.time()
-logger.info("%s",(end_time-start_time))
+logger.info("%s", (end_time - start_time))
