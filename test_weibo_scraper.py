@@ -100,6 +100,13 @@ class TestWeiboScraper(unittest.TestCase):
         wp_uid = weibo_scraper.get_weibo_profile(uid='3637346297')
         print(wp_uid.raw_user_response)
 
+    def test_follows_and_followers(self):
+        for user in weibo_scraper.get_follows(name='嘻红豆', max_entry_limit=1):
+            print(user)
+
+        print("=="*10)
+        for user in weibo_scraper.get_followers(name='嘻红豆',max_entry_limit=1):
+            print(user)
 
 if __name__ == '__main__':
     unittest.main()

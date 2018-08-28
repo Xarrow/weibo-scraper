@@ -9,11 +9,18 @@
 
 import requests
 import re
+import datetime
 from typing import Optional, List
+
+now = datetime.datetime.now()
+CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
+CURRENT_YEAR = now.strftime('%Y')
+CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
 
 Response = Optional[dict]
 
 _GET_INDEX = "https://m.weibo.cn/api/container/getIndex"
+_GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 
 
 class WeiboApiException(Exception):
@@ -66,6 +73,34 @@ def weibo_tweets(containerid: str, page: int) -> Response:
     """
     _params = {"containerid": containerid, "page": page}
     _response = requests.get(url=_GET_INDEX, params=_params)
+    if _response.status_code == 200:
+        return _response.json()
+    return None
+
+
+def weibo_containerid(containerid: str, page: int) -> Response:
+    """
+
+    :param containerid:
+    :param page:
+    :return:
+    """
+    _params = {"containerid": containerid, "page": page}
+    _response = requests.get(url=_GET_INDEX, params=_params)
+    if _response.status_code == 200:
+        return _response.json()
+    return None
+
+
+def weibo_second(containerid: str, page: int) -> Response:
+    """
+    https://m.weibo.cn/api/container/getSecond
+    :param containerid:
+    :param page:
+    :return:
+    """
+    _params = {"containerid": containerid, "page": page}
+    _response = requests.get(url=_GET_SECOND, params=_params)
     if _response.status_code == 200:
         return _response.json()
     return None
@@ -174,11 +209,35 @@ class UserMeta(object):
 
     def __repr__(self):
         return "<UserMeta uid={} , screen_name={} , description={} , gender={} , avatar_hd={} ," \
-               "profile_image_url = {}>".format(repr(self.id),repr(self.screen_name),repr(self.description),repr(self.gender),
-                                                repr(self.avatar_hd),repr(self.profile_image_url))
+               "profile_image_url = {}>".format(repr(self.id), repr(self.screen_name), repr(self.description),
+                                                repr(self.gender),
+                                                repr(self.avatar_hd), repr(self.profile_image_url))
+
+
+class PicMeta(object):
+    def __init__(self, pic_node: dict) -> None:
+        self.pic_node = pic_node
+
+    @property
+    def raw_pics(self) -> _JSONResponse:
+        return self.pic_node
+
+    @property
+    def pid(self) -> _StrFieldResponse:
+        return self.pic_node.get('pid') if self.pic_node.get('pid') is not None else None
+
+    @property
+    def url(self) -> _StrFieldResponse:
+        return self.pic_node.get("url") if self.pic_node.get("url") is not None else None
+
+    @property
+    def large_url(self) -> _StrFieldResponse:
+        return self.pic_node.get('large').get('url') if self.pic_node.get('large') is not None else None
 
 
 class MBlogMeta(object):
+    __slots__ = ['mblog_node']
+
     def __init__(self, mblog_node):
         self.mblog_node = mblog_node
 
@@ -188,7 +247,14 @@ class MBlogMeta(object):
 
     @property
     def created_at(self) -> _StrFieldResponse:
-        return self.mblog_node.get('created_at')
+        created_at = self.mblog_node.get('created_at')
+        # sample as "08-01" -> "2018-08-01"
+        if len(created_at) < 9 and "-" in created_at:
+            created_at = CURRENT_YEAR + "-" + created_at
+        # sample as "几分钟"
+        if not str(created_at).__contains__("-"):
+            created_at = CURRENT_YEAR_WITH_DATE
+        return created_at
 
     @property
     def id(self) -> _StrFieldResponse:
@@ -239,9 +305,16 @@ class MBlogMeta(object):
     def bid(self) -> _StrFieldResponse:
         return self.mblog_node.get('bid')
 
+    @property
+    def pics_node(self):
+        return [PicMeta(pic) for pic in self.mblog_node.get('pics')] if self.mblog_node.get(
+            'pics') is not None else None
+
 
 class TweetMeta(object):
     """ weibo tweet meta data"""
+
+    __slots__ = ['card_node']
 
     def __init__(self, card_node: dict) -> None:
         self.card_node = card_node
@@ -280,6 +353,8 @@ _ListTweetMetaFieldResponse = List[TweetMeta]
 
 
 class WeiboTweetParser(object):
+    __slots__ = ['tweet_containerid', 'tweet_get_index_reponse']
+
     def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
         self.tweet_containerid = tweet_containerid
         self.tweet_get_index_reponse = weibo_tweets(containerid=tweet_containerid) \
@@ -296,7 +371,8 @@ class WeiboTweetParser(object):
     @property
     def cards_node(self) -> _ListTweetMetaFieldResponse:
         # skip  recommended weibo tweet
-        return [TweetMeta(card_node=card) for card in list(filter(lambda card:card.get('card_group') is None,self.tweet_get_index_reponse.get('data').get('cards')))]
+        return [TweetMeta(card_node=card) for card in list(
+            filter(lambda card: card.get('card_group') is None, self.tweet_get_index_reponse.get('data').get('cards')))]
 
     @property
     def tweet_containerid_node(self) -> _StrFieldResponse:
@@ -311,9 +387,11 @@ class WeiboTweetParser(object):
 
 
 class WeiboGetIndexParser(object):
+    __slots__ = ['get_index_api_response', 'uid']
+
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         if get_index_api_response is None and uid is None:
-            raise WeiboApiException ("In WeiboGetIndexParser , get_index_api_response and uid can not be None . ")
+            raise WeiboApiException("In WeiboGetIndexParser , get_index_api_response and uid can not be None . ")
         elif get_index_api_response is not None:
             self.get_index_api_response = get_index_api_response
             self.uid = self.user_info_node.get('id')
@@ -381,25 +459,244 @@ class WeiboGetIndexParser(object):
     @property
     def tweet_containerid(self):
         if isinstance(self.tabs_node, list):
-            _weibo_containerid =  list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid')
+            _weibo_containerid = list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get(
+                'containerid')
             if _weibo_containerid.__contains__('WEIBO_SECOND_PROFILE_WEIBO'):
-                return re.findall(r'(.+?)WEIBO_SECOND_PROFILE_WEIBO_PAY_BILL',list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get('containerid'))[0]
+                return re.findall(r'(.+?)WEIBO_SECOND_PROFILE_WEIBO_PAY_BILL',
+                                  list(filter(lambda tab: tab.get('tab_type') == 'weibo', self.tabs_node))[0].get(
+                                      'containerid'))[0]
             else:
                 return _weibo_containerid
         elif isinstance(self.tabs_node, dict):
             _response_include_tweetid = weibo_tweets(containerid=self.profile_containerid, page=0)
             _cards = _response_include_tweetid.get('data').get('cards')
             return re.findall(r'containerid=(.+?)WEIBO_SECOND',
-                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[0]
+                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[
+                0]
         else:
             return None
 
     @property
-    def follow_containerid(self):
-        return re.findall(r'lfid=(.+?$)',self.scheme_node)[0]+'_-_FANS' if self.scheme_node is not None else None
+    def follow_containerid_second(self):
+        return re.findall(r'lfid=(.+?$)', self.scheme_node)[0] + '_-_FANS' if self.scheme_node is not None else None
+
+    @property
+    def follower_containerid_second(self):
+        return re.findall(r'lfid=(.+?$)', self.scheme_node)[
+                   0] + '_-_FOLLOWERS' if self.scheme_node is not None else None
+
     @property
     def follower_containerid(self):
-        return re.findall(r'lfid=(.+?$)',self.scheme_node)[0]+'_-_FOLLOWERS' if self.scheme_node is not None else None
+        return re.findall(r'containerid=(.+?)&luicode', self.fans_scheme_node)[0].replace("_intimacy", "")
+
+    @property
+    def follow_containerid(self):
+        return re.findall(r'containerid=(.+?)&luicode', self.follow_scheme_node)[0].replace("recomm", "")
 
     def __repr__(self):
         return r"<WeiboGetIndexParser uid={} >".format(repr(self.user.id))
+
+
+class FollowAndFollowerParser(object):
+    __slots__ = ['follow_and_follower_response', 'follow_and_follower_containerid']
+
+    def __init__(self, follow_and_follower_response: dict, follow_and_follower_containerid: str = None):
+        self.follow_and_follower_response = follow_and_follower_response
+        self.follow_and_follower_containerid = follow_and_follower_containerid if follow_and_follower_containerid is not None else self.containerid
+
+    @property
+    def raw_follow_and_follower_response(self):
+        return self.follow_and_follower_response
+
+    @property
+    def is_validate(self):
+        if self.raw_follow_and_follower_response is None:
+            return False
+        if self.raw_follow_and_follower_response.get('ok') == 0:
+            return False
+        return True
+
+    @property
+    def data_node(self):
+        return self.raw_follow_and_follower_response.get('data') if self.is_validate else None
+
+    @property
+    def count(self):
+        return self.data_node.get('count') if self.data_node is not None else None
+
+    @property
+    def user_list(self):
+        if self.data_node is None:
+            return None
+        return [UserMeta(user_node=card.get('user')) for card in self.data_node.get('cards')]
+
+    @property
+    def containerid(self):
+        return self.raw_follow_and_follower_response.get('data').get('cardlistInfo').get('containerid')
+
+    def __repr__(self):
+        return "<FollowAndFollowerParser container={} >".format(repr(self.containerid))
+
+
+# ----------------------------------- 前方高能 ---------------------------
+HEADER = {
+    "Connection": "keep-alive",
+    "Host": "passport.weibo.cn",
+    "Upgrade-Insecure-Requests": "1",
+    "Referer": "https://passport.weibo.cn/signin/login?entry=mweibo&r=http%3A%2F%2Fweibo.cn%2F&backTitle=%CE%A2%B2%A9&vt=",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36"
+}
+
+AFTER_HEADER = {
+    "Accept": "application/json, text/plain, */*",
+    "Host": "m.weibo.cn",
+    "Origin": "https://m.weibo.cn",
+    "Referer": "https://m.weibo.cn/u/",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest"
+}
+
+PC_HEADER = {
+    "Host": "weibo.com",
+    "Origin": "https://weibo.com",
+    "Referer": "https://weibo.com/ZhangJianForV/home?topnav=1&wvr=6",
+    "User-Agent": "Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.25 (KHTML, like Gecko) Version/11.0 Mobile/15A5304j Safari/604.1",
+    "X-Requested-With": "XMLHttpRequest"
+}
+
+
+class WeiboV2(object):
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+        self.request = requests.session()
+        self.cookies = None
+        self.st = None
+        self.userid = None
+
+    def login_for_sso(self):
+        login_url = 'https://passport.weibo.cn/sso/login'
+        data = {
+            'username': self.username,
+            'password': self.password,
+            'savestate': '1',
+            'r': 'http://weibo.cn/',
+            'ec': '0',
+            'pagerefer': '',
+            'entry': 'mweibo',
+            'wentry': '',
+            'loginfrom': '',
+            'client_id': '',
+            'code': '',
+            'qq': '',
+            'mainpageflag': '1',
+            'hff': '',
+            'hfp': ''
+        }
+        headers = HEADER
+        r_login = self.request.post(url=login_url, data=data, headers=headers)
+        if not r_login.text.__contains__('20000000'):
+            raise Exception("login_for_sso failed !")
+
+        self.cookies = r_login.cookies.get_dict()
+
+    def get_uid(self):
+        """get uid"""
+        response = self.request.get(url='https://m.weibo.cn/', cookies=self.cookies)
+        if response.status_code == 200 and response.text.__contains__('uid') > 0:
+            self.userid = response.text[response.text.index('"uid":"') + len('"uid":"'):response.text.index('","ctrl"')]
+
+    def get_st(self):
+        """get st """
+        r = self.request.get(url='https://m.weibo.cn/u/' + self.userid, cookies=self.cookies)
+        if r.status_code == 200 and r.text.__contains__("st") > 0:
+            _response = r.text
+            if str(_response).__contains__("st: '") > 0:
+                self.st = _response[_response.index("st: '") + len("st: '"):_response.index("',\n            login:")]
+            elif str(_response).__contains__('"st":"') > 0:
+                self.st = _response[_response.index('"st":"') + len('"st":"'):_response.index('","isInClient')]
+
+    def check_cookie_expired(self):
+        """check cookies whether expired"""
+        response = self.request.get(url='https://m.weibo.cn/', cookies=self.cookies)
+        if response.status_code == 200:
+            return response.text.__contains__(self.userid)
+        return False
+
+    def check_cookies(self):
+        '''check cookie'''
+        if self.cookies is None or not self.check_cookie_expired():
+            return False
+        return True
+
+    def re_login(self):
+        """login retry"""
+        self.login_for_sso()
+        self.get_uid()
+        self.get_st()
+
+    def _weibo_getIndex(self, userid):
+        """
+        微博概要内容API
+        https://m.weibo.cn/api/container/getIndex?type=uid&value=3637346297
+        :param value:
+        :return:
+        """
+        api = 'http://m.weibo.cn/api/container/getIndex'
+        param = {"type": "uid", "value": userid}
+        return self.request.get(url=api, params=param)
+
+    def _weibo_content(self, containerid, page=1):
+        """
+        微博内容API
+        1076033637346297
+        https://m.weibo.cn/api/container/getIndex?containerid=1076033637346297
+        :param containerid:
+        :return:
+        """
+        api = "https://m.weibo.cn/api/container/getIndex"
+        params = {"containerid": containerid, "page": page}
+        return self.request.get(url=api, params=params)
+
+    def send_words_on_pc(self, word):
+        """
+        PC端发送微博
+        https://weibo.com/aj/mblog/add
+        =======================
+            title:有什么新鲜事想告诉大家?
+            location:v6_content_home
+            text:[doge]
+            appkey:
+            style_type:1
+            pic_id:
+            tid:
+            pdetail:
+            rank:0
+            rankid:
+            pub_source:page_2
+            longtext:1
+            topic_id:1022:
+            pub_type:dialog
+            _t:0
+        :param word:
+        :return:
+        """
+        api = 'https://weibo.com/aj/mblog/add?ajwvr=6&__rnd=1511200888604'
+        data = {
+            "title": "有什么新鲜事想告诉大家?",
+            "location": "v6_content_home",
+            "text": word,
+            "appkey": "",
+            "style_type": "1",
+            "pic_id": "",
+            "tid": "",
+            "pdetail": "",
+            "rank": "0",
+            "rankid": "",
+            "pub_source": "page_2",
+            "longtext": "1",
+            "topic_id": "1022:",
+            "pub_type": "dialog",
+            "_t": 0
+        }
+        return self.request.post(url=api, data=data, cookies=self.cookies, headers=PC_HEADER).text

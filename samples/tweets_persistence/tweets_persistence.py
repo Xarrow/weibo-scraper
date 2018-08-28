@@ -6,11 +6,16 @@
  Site: https://iliangqunru.bitcron.com/
  File: tweets_persistence.py
  Time: 6/9/18
+ Reference : https://www.toptal.com/python/python-design-patterns
 """
 import logging
 from contextlib import contextmanager
+import time
+import os
+import pickle
 
-from weibo_scraper import *
+from weibo_scraper import get_formatted_weibo_tweets_by_name
+from weibo_base import rt_logger
 
 level = logging.DEBUG
 format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -18,38 +23,220 @@ datefmt = '%Y-%m-%d %H:%M'
 logging.basicConfig(level=level, format=format, datefmt=datefmt)
 logger = logging.getLogger(__name__)
 
+DEFAULT_EXPORT_FILENAME = "export_%s" % int(time.time())
+DEFAULT_EXPORT_PATH = os.getcwd()
+
+
+class WeiboScraperPersistenceException(Exception):
+    def __init__(self, message):
+        self.message = message
+
 
 @contextmanager
-def open_file(file_name: str = r'template/1.html'):
-    file = open(file=file_name, mode='wb+')
+def open_file(file_name: str):
+    file = open(file=file_name, mode='wb')
     yield file
     file.flush()
     file.close()
 
 
-tweets_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
-for tweet_parser in tweets_iterator:
-    for tweetMeta in tweet_parser.cards_node:
-        with open_file() as f:
-            f.write(tweetMeta.mblog.text.encode("utf-8"))
-        print(tweetMeta.mblog.text)
+class BaseAction(object):
+    def __init__(self,
+                 name: str,
+                 pages: int = None,
+                 export_file_path: str = None,
+                 export_file_name: str = None,
+                 export_file_suffix: str = None,
+                 is_simplify: bool = None):
+        """
+        BaseAction
+        :param name:                weibo name which wants to search and persistence
+        :param pages:               max pages which requests
+        :param export_file_path:    export file path
+        :param export_file_name:    export file name
+        :param export_file_suffix:  export file suffix , examples : txt , sql , html
+        :param is_simplify:         whether export pure weibo tweets
+        """
+        if name is None or name == '':
+            raise WeiboScraperPersistenceException("persistence need param of 'name' which you want to search!")
+
+        self.name = name
+        self.pages = pages
+        self.export_file_path = export_file_path or DEFAULT_EXPORT_PATH
+        self.export_file_name = export_file_name or DEFAULT_EXPORT_FILENAME
+        self.export_file_suffix = export_file_suffix or "txt"
+        self.export_file_suffix = "." + self.export_file_suffix if not self.export_file_suffix.startswith(
+            ".") else self.export_file_suffix
+        # reset export_file_name
+        # sample as "嘻红豆_export_1534784328.json"
+        self.export_file_name = self.name + "_" + self.export_file_name + self.export_file_suffix
+        self.is_simplfy = True if is_simplify is None else is_simplify
+
+    def fetch_data(self, *args, **kwargs):
+        pass
+
+    def execute(self, *args, **kwargs):
+        # 父类执行
+        pass
 
 
-# def get_weibo_follows(name:str=None,)
-# import time
+class WeiboTweetsAction(BaseAction):
+    """ weibo tweets action"""
 
-# if __name__ == '__main__':
-#     startTime = time.time()
-#     # weibo_profile = get_weibo_profile(name='嘻红豆',)
-#     # print(weibo_profile)
-#     #
-#     result_iterator = get_formatted_weibo_tweets_by_name(name='嘻红豆', pages=None)
-#     for user_meta in result_iterator:
-#         for tweetMeta in user_meta.cards_node:
-#             print(tweetMeta.mblog.text)
-#
-#     # from weibo_scraper import  get_weibo_tweets_by_name
-#     # for tweet in get_weibo_tweets_by_name(name='崔永元', pages=None):
-#     #     print(tweet)
-#     endTime = time.time()
-#     print(endTime - startTime)
+    def fetch_data(self, *args, **kwargs):
+        tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
+        for tweets_parser in tweets_iterator:
+            for tweet_meta in tweets_parser.cards_node:
+                yield tweet_meta
+
+
+class WeiboFollowerAndFansAction(BaseAction):
+    """ weibo followers and fans action"""
+
+    def fetch_data(self, *args, **kwargs):
+        pass
+
+
+class TweetsPersistence(object):
+    def __init__(self, action: BaseAction):
+        self.action = action
+
+    @rt_logger
+    def persistence(self, *args, **kwargs):
+        # TODO function to AOP
+        self.action.execute(*args, **kwargs)
+
+
+# -------------------------- implement ------------------------
+
+class HTMLPersistenceImpl(WeiboTweetsAction):
+    """ export as html file """
+
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "html",
+                 is_simplify: bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+    def execute(self, *args, **kwargs):
+        #  do nothing
+        pass
+
+
+class SerializablePersistenceImpl(WeiboTweetsAction):
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "pickle",
+                 is_simplify: bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+    def execute(self, *args, **kwargs):
+        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as pickle_file:
+            for tweet_meta in self.fetch_data():
+                if self.is_simplfy:
+                    single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                  "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                  "text: " + tweet_meta.mblog.text + "\t\t"
+                    if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                        single_line += "pics: "
+                        for pic in tweet_meta.mblog.pics_node:
+                            single_line = single_line + pic.large_url + "\t\t"
+                else:
+                    single_line = str(tweet_meta.raw_card)
+                single_line += "\t\t\n"
+                pickle.dump(single_line, pickle_file)
+        pass
+
+
+class FilePersistenceImpl(WeiboTweetsAction):
+    """ export as txt file """
+
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "txt",
+                 is_simplify: bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+    def execute(self):
+        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as text_file:
+            for tweet_meta in self.fetch_data():
+                if self.is_simplfy:
+                    single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                  "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                  "text: " + tweet_meta.mblog.text + "\t\t"
+                    if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                        single_line += "pics: "
+                        for pic in tweet_meta.mblog.pics_node:
+                            single_line = single_line + pic.large_url + "\t\t"
+                else:
+                    single_line = str(tweet_meta.raw_card)
+                single_line += "\t\t\n"
+                text_file.write(bytes(single_line, encoding='utf-8'))
+
+
+class CSVPersistenceImpl(BaseAction):
+    """export as csv file"""
+    pass
+
+
+class SQLPersistenceImpl(BaseAction):
+    """ export as sql file """
+    pass
+
+
+class JSONPersistenceImpl(WeiboTweetsAction):
+    """ export as json file"""
+
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "json",
+                 is_simplify: bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+    def execute(self):
+        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as json_file:
+            for tweet_meta in self.fetch_data():
+                if self.is_simplfy:
+                    single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                  "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                  "text: " + tweet_meta.mblog.text + "\t\t"
+                    if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                        single_line += "pics: "
+                        for pic in tweet_meta.mblog.pics_node:
+                            single_line = single_line + pic.large_url + "\t\t"
+                else:
+                    single_line = str(tweet_meta.raw_card)
+                json_file.write(bytes(single_line, encoding='utf-8'))
+                json_file.write(bytes('\t\t\n', encoding='utf-8'))
+
+
+# filePst = FilePersistence()
+jsonPst = SerializablePersistenceImpl(name='Linux中国', pages=30, is_simplify=True)
+# jsonPst.execute()
+tPst = TweetsPersistence(action=jsonPst)
+tPst.persistence()
+
