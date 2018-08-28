@@ -12,7 +12,6 @@ import re
 import datetime
 from typing import Optional, List
 
-
 now = datetime.datetime.now()
 CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
 CURRENT_YEAR = now.strftime('%Y')
@@ -354,7 +353,7 @@ _ListTweetMetaFieldResponse = List[TweetMeta]
 
 
 class WeiboTweetParser(object):
-    __slots__ = ['tweet_containerid','tweet_get_index_reponse']
+    __slots__ = ['tweet_containerid', 'tweet_get_index_reponse']
 
     def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
         self.tweet_containerid = tweet_containerid
@@ -388,7 +387,7 @@ class WeiboTweetParser(object):
 
 
 class WeiboGetIndexParser(object):
-    __slots__ = ['get_index_api_response','uid']
+    __slots__ = ['get_index_api_response', 'uid']
 
     def __init__(self, get_index_api_response: dict = None, uid: str = None) -> None:
         if get_index_api_response is None and uid is None:
@@ -537,3 +536,167 @@ class FollowAndFollowerParser(object):
 
     def __repr__(self):
         return "<FollowAndFollowerParser container={} >".format(repr(self.containerid))
+
+
+# ----------------------------------- 前方高能 ---------------------------
+HEADER = {
+    "Connection": "keep-alive",
+    "Host": "passport.weibo.cn",
+    "Upgrade-Insecure-Requests": "1",
+    "Referer": "https://passport.weibo.cn/signin/login?entry=mweibo&r=http%3A%2F%2Fweibo.cn%2F&backTitle=%CE%A2%B2%A9&vt=",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36"
+}
+
+AFTER_HEADER = {
+    "Accept": "application/json, text/plain, */*",
+    "Host": "m.weibo.cn",
+    "Origin": "https://m.weibo.cn",
+    "Referer": "https://m.weibo.cn/u/",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest"
+}
+
+PC_HEADER = {
+    "Host": "weibo.com",
+    "Origin": "https://weibo.com",
+    "Referer": "https://weibo.com/ZhangJianForV/home?topnav=1&wvr=6",
+    "User-Agent": "Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.25 (KHTML, like Gecko) Version/11.0 Mobile/15A5304j Safari/604.1",
+    "X-Requested-With": "XMLHttpRequest"
+}
+
+
+class WeiboV2(object):
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+        self.request = requests.session()
+        self.cookies = None
+        self.st = None
+        self.userid = None
+
+    def login_for_sso(self):
+        login_url = 'https://passport.weibo.cn/sso/login'
+        data = {
+            'username': self.username,
+            'password': self.password,
+            'savestate': '1',
+            'r': 'http://weibo.cn/',
+            'ec': '0',
+            'pagerefer': '',
+            'entry': 'mweibo',
+            'wentry': '',
+            'loginfrom': '',
+            'client_id': '',
+            'code': '',
+            'qq': '',
+            'mainpageflag': '1',
+            'hff': '',
+            'hfp': ''
+        }
+        headers = HEADER
+        r_login = self.request.post(url=login_url, data=data, headers=headers)
+        if not r_login.text.__contains__('20000000'):
+            raise Exception("login_for_sso failed !")
+
+        self.cookies = r_login.cookies.get_dict()
+
+    def get_uid(self):
+        """get uid"""
+        response = self.request.get(url='https://m.weibo.cn/', cookies=self.cookies)
+        if response.status_code == 200 and response.text.__contains__('uid') > 0:
+            self.userid = response.text[response.text.index('"uid":"') + len('"uid":"'):response.text.index('","ctrl"')]
+
+    def get_st(self):
+        """get st """
+        r = self.request.get(url='https://m.weibo.cn/u/' + self.userid, cookies=self.cookies)
+        if r.status_code == 200 and r.text.__contains__("st") > 0:
+            _response = r.text
+            if str(_response).__contains__("st: '") > 0:
+                self.st = _response[_response.index("st: '") + len("st: '"):_response.index("',\n            login:")]
+            elif str(_response).__contains__('"st":"') > 0:
+                self.st = _response[_response.index('"st":"') + len('"st":"'):_response.index('","isInClient')]
+
+    def check_cookie_expired(self):
+        """check cookies whether expired"""
+        response = self.request.get(url='https://m.weibo.cn/', cookies=self.cookies)
+        if response.status_code == 200:
+            return response.text.__contains__(self.userid)
+        return False
+
+    def check_cookies(self):
+        '''check cookie'''
+        if self.cookies is None or not self.check_cookie_expired():
+            return False
+        return True
+
+    def re_login(self):
+        """login retry"""
+        self.login_for_sso()
+        self.get_uid()
+        self.get_st()
+
+    def _weibo_getIndex(self, userid):
+        """
+        微博概要内容API
+        https://m.weibo.cn/api/container/getIndex?type=uid&value=3637346297
+        :param value:
+        :return:
+        """
+        api = 'http://m.weibo.cn/api/container/getIndex'
+        param = {"type": "uid", "value": userid}
+        return self.request.get(url=api, params=param)
+
+    def _weibo_content(self, containerid, page=1):
+        """
+        微博内容API
+        1076033637346297
+        https://m.weibo.cn/api/container/getIndex?containerid=1076033637346297
+        :param containerid:
+        :return:
+        """
+        api = "https://m.weibo.cn/api/container/getIndex"
+        params = {"containerid": containerid, "page": page}
+        return self.request.get(url=api, params=params)
+
+    def send_words_on_pc(self, word):
+        """
+        PC端发送微博
+        https://weibo.com/aj/mblog/add
+        =======================
+            title:有什么新鲜事想告诉大家?
+            location:v6_content_home
+            text:[doge]
+            appkey:
+            style_type:1
+            pic_id:
+            tid:
+            pdetail:
+            rank:0
+            rankid:
+            pub_source:page_2
+            longtext:1
+            topic_id:1022:
+            pub_type:dialog
+            _t:0
+        :param word:
+        :return:
+        """
+        api = 'https://weibo.com/aj/mblog/add?ajwvr=6&__rnd=1511200888604'
+        data = {
+            "title": "有什么新鲜事想告诉大家?",
+            "location": "v6_content_home",
+            "text": word,
+            "appkey": "",
+            "style_type": "1",
+            "pic_id": "",
+            "tid": "",
+            "pdetail": "",
+            "rank": "0",
+            "rankid": "",
+            "pub_source": "page_2",
+            "longtext": "1",
+            "topic_id": "1022:",
+            "pub_type": "dialog",
+            "_t": 0
+        }
+        return self.request.post(url=api, data=data, cookies=self.cookies, headers=PC_HEADER).text

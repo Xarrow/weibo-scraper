@@ -15,6 +15,7 @@ import os
 import pickle
 
 from weibo_scraper import get_formatted_weibo_tweets_by_name
+from weibo_base import rt_logger
 
 level = logging.DEBUG
 format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -79,30 +80,42 @@ class BaseAction(object):
         pass
 
 
+class WeiboTweetsAction(BaseAction):
+    """ weibo tweets action"""
+
+    def fetch_data(self, *args, **kwargs):
+        tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
+        for tweets_parser in tweets_iterator:
+            for tweet_meta in tweets_parser.cards_node:
+                yield tweet_meta
+
+
+class WeiboFollowerAndFansAction(BaseAction):
+    """ weibo followers and fans action"""
+
+    def fetch_data(self, *args, **kwargs):
+        pass
+
+
 class TweetsPersistence(object):
     def __init__(self, action: BaseAction):
         self.action = action
 
+    @rt_logger
     def persistence(self, *args, **kwargs):
         # TODO function to AOP
         self.action.execute(*args, **kwargs)
 
 
 # -------------------------- implement ------------------------
-def fetch_weibo_tweets_content(self, ):
-    tweets_iterator = get_formatted_weibo_tweets_by_name(name=self.name, pages=self.pages)
-    for tweets_parser in tweets_iterator:
-        for tweet_meta in tweets_parser.cards_node:
-            yield tweet_meta
 
-
-class HTMLPersistence(BaseAction):
+class HTMLPersistenceImpl(WeiboTweetsAction):
     """ export as html file """
 
     def __init__(self,
                  name: str = None,
                  pages: int = None,
-                 export_file_suffix: str = "json",
+                 export_file_suffix: str = "html",
                  is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
@@ -111,8 +124,45 @@ class HTMLPersistence(BaseAction):
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
+    def execute(self, *args, **kwargs):
+        #  do nothing
+        pass
 
-class FilePersistence(BaseAction):
+
+class SerializablePersistenceImpl(WeiboTweetsAction):
+    def __init__(self,
+                 name: str = None,
+                 pages: int = None,
+                 export_file_suffix: str = "pickle",
+                 is_simplify: bool = False) -> None:
+        super().__init__(name=name,
+                         pages=pages,
+                         export_file_path=None,
+                         export_file_name=None,
+                         export_file_suffix=export_file_suffix,
+                         is_simplify=is_simplify)
+
+    def execute(self, *args, **kwargs):
+        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as pickle_file:
+            for tweet_meta in self.fetch_data():
+                if self.is_simplfy:
+                    single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                  "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                  "text: " + tweet_meta.mblog.text + "\t\t"
+                    if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                        single_line += "pics: "
+                        for pic in tweet_meta.mblog.pics_node:
+                            single_line = single_line + pic.large_url + "\t\t"
+                else:
+                    single_line = str(tweet_meta.raw_card)
+                single_line += "\t\t\n"
+                pickle.dump(single_line, pickle_file)
+        pass
+
+
+class FilePersistenceImpl(WeiboTweetsAction):
+    """ export as txt file """
+
     def __init__(self,
                  name: str = None,
                  pages: int = None,
@@ -126,31 +176,34 @@ class FilePersistence(BaseAction):
                          is_simplify=is_simplify)
 
     def execute(self):
-        with open_file(file_name='template/weibo_scraper_index.html') as f:
-            tweets_iterator = get_formatted_weibo_tweets_by_name(name='小麻花就是我啊', pages=None)
-            for tweet_parser in tweets_iterator:
-                for tweetMeta in tweet_parser.cards_node:
-                    f.write(bytes("=" * 100 + "<br/>" + tweetMeta.mblog.text + "<br/>" + tweetMeta.scheme + "<br/>",
-                                  encoding='UTF-8'))
-                    if tweetMeta.mblog.pics_node is None:
-                        pass
-                    else:
-                        for pic in tweetMeta.mblog.pics_node:
-                            f.write(bytes('=' * 100 + "<br/><img src='" + pic.large_url + "'/><br/>", encoding='utf-8'))
+        with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as text_file:
+            for tweet_meta in self.fetch_data():
+                if self.is_simplfy:
+                    single_line = "id: " + tweet_meta.mblog.id + "\t\t" + \
+                                  "source: " + tweet_meta.mblog.source + "\t\t" + \
+                                  "text: " + tweet_meta.mblog.text + "\t\t"
+                    if tweet_meta.mblog.pics_node and len(tweet_meta.mblog.pics_node) > 0:
+                        single_line += "pics: "
+                        for pic in tweet_meta.mblog.pics_node:
+                            single_line = single_line + pic.large_url + "\t\t"
+                else:
+                    single_line = str(tweet_meta.raw_card)
+                single_line += "\t\t\n"
+                text_file.write(bytes(single_line, encoding='utf-8'))
 
 
-class CSVPersistence(BaseAction):
-    """export as csv"""
+class CSVPersistenceImpl(BaseAction):
+    """export as csv file"""
     pass
 
 
-class SQLPersistence(BaseAction):
-    """ export as SQL"""
+class SQLPersistenceImpl(BaseAction):
+    """ export as sql file """
     pass
 
 
-class JSONPersistence(BaseAction):
-    """ export as JSON"""
+class JSONPersistenceImpl(WeiboTweetsAction):
+    """ export as json file"""
 
     def __init__(self,
                  name: str = None,
@@ -164,11 +217,6 @@ class JSONPersistence(BaseAction):
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
-    def fetch_data(self, ):
-        yield from fetch_weibo_tweets_content(self)
-
-    # more faster
-    # 1.2 sec
     def execute(self):
         with open_file(file_name=os.path.join(self.export_file_path, self.export_file_name)) as json_file:
             for tweet_meta in self.fetch_data():
@@ -186,11 +234,9 @@ class JSONPersistence(BaseAction):
                 json_file.write(bytes('\t\t\n', encoding='utf-8'))
 
 
-start_time = time.time()
 # filePst = FilePersistence()
-jsonPst = JSONPersistence(name='Linux中国', pages=30, is_simplify=True)
+jsonPst = SerializablePersistenceImpl(name='Linux中国', pages=30, is_simplify=True)
 # jsonPst.execute()
 tPst = TweetsPersistence(action=jsonPst)
 tPst.persistence()
-end_time = time.time()
-logger.info("%s", (end_time - start_time))
+
