@@ -108,5 +108,16 @@ class TestWeiboScraper(unittest.TestCase):
         for user in weibo_scraper.get_followers(name='嘻红豆',max_entry_limit=1):
             print(user)
 
+    def test_comments_request_with_structure(self):
+        """
+        https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
+        :return:
+        """
+
+        weibo_comments_res = weibo_comments(id="4257059677028285",mid='4257059677028285')
+        wcp = WeiboCommentsParser(weibo_comments_res)
+        print(wcp.inner_data_node)
+
+
 if __name__ == '__main__':
     unittest.main()
