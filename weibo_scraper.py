@@ -357,13 +357,14 @@ Supported Formats:
                 more_description += "\n" + f.read()
             print(more_description)
             pass
-        tweets_persistence.dispatch(name=name,
-                                    pages=pages,
-                                    is_simplify=is_simplify,
-                                    persistence_format=format,
-                                    export_file_path=exported_file_path,
-                                    export_file_name=exported_file_name,
-                                    is_debug=is_debug,)
+        else:
+            tweets_persistence.dispatch(name=name,
+                                        pages=pages,
+                                        is_simplify=is_simplify,
+                                        persistence_format=format,
+                                        export_file_path=exported_file_path,
+                                        export_file_name=exported_file_name,
+                                        is_debug=is_debug,)
     export_to_file()
 
 
