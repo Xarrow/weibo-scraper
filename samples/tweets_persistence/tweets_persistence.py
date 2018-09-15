@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_EXPORT_FILENAME = "export_%s" % int(time.time())
 DEFAULT_EXPORT_PATH = os.getcwd()
+DEFAULT_DOT="."
 
 
 class WeiboScraperPersistenceException(Exception):
@@ -58,18 +59,22 @@ class BaseAction(object):
         :param is_simplify:         whether export pure weibo tweets
         """
         if name is None or name == '':
-            raise WeiboScraperPersistenceException("persistence need param of 'name' which you want to search!")
+            raise WeiboScraperPersistenceException("persistence need param of 'name' which you want to search !")
 
         self.name = name
         self.pages = pages
         self.export_file_path = export_file_path or DEFAULT_EXPORT_PATH
-        self.export_file_name = export_file_name or DEFAULT_EXPORT_FILENAME
-        self.export_file_suffix = export_file_suffix or "txt"
-        self.export_file_suffix = "." + self.export_file_suffix if not self.export_file_suffix.startswith(
-            ".") else self.export_file_suffix
+        self.export_file_name = export_file_name
+        self.export_file_suffix = export_file_suffix
+        self.export_file_suffix = DEFAULT_DOT + self.export_file_suffix if not self.export_file_suffix.startswith(DEFAULT_DOT) else self.export_file_suffix
+
+        if self.export_file_path is not None:
+            if not os.path.isdir(self.export_file_path):
+                raise WeiboScraperPersistenceException("export file path is not a dir !")
         # reset export_file_name
-        # sample as "嘻红豆_export_1534784328.json"
-        self.export_file_name = self.name + "_" + self.export_file_name + self.export_file_suffix
+        # sample as "嘻红豆_export_1534784328.json" or custom file name "嘻红豆.txt"
+        self.export_file_name = self.export_file_name if self.export_file_name is not None else self.name+"_"+DEFAULT_EXPORT_FILENAME
+        self.export_file_name = self.export_file_name+self.export_file_suffix if not self.export_file_name.__contains__(DEFAULT_DOT) else self.export_file_name
         self.is_simplfy = True if is_simplify is None else is_simplify
 
     def fetch_data(self, *args, **kwargs):
@@ -102,9 +107,15 @@ class TweetsPersistence(object):
         self.action = action
 
     @rt_logger
+    def execute_with_de(self, *args, **kwargs):
+        self.action.execute(*args,**kwargs)
+
     def persistence(self, *args, **kwargs):
         # TODO function to AOP
-        self.action.execute(*args, **kwargs)
+        if logging.getLogger().level ==logging.DEBUG:
+            self.execute_with_de(*args, **kwargs)
+        else:
+            self.action.execute(*args, **kwargs)
 
 
 # -------------------------- implement ------------------------
@@ -115,12 +126,14 @@ class HTMLPersistenceImpl(WeiboTweetsAction):
     def __init__(self,
                  name: str = None,
                  pages: int = None,
+                 export_file_path=None,
+                 export_file_name=None,
                  export_file_suffix: str = "html",
                  is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
-                         export_file_path=None,
-                         export_file_name=None,
+                         export_file_path=export_file_path,
+                         export_file_name=export_file_name,
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
@@ -133,12 +146,14 @@ class SerializablePersistenceImpl(WeiboTweetsAction):
     def __init__(self,
                  name: str = None,
                  pages: int = None,
+                 export_file_path=None,
+                 export_file_name=None,
                  export_file_suffix: str = "pickle",
                  is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
-                         export_file_path=None,
-                         export_file_name=None,
+                         export_file_path=export_file_path,
+                         export_file_name=export_file_name,
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
@@ -160,18 +175,20 @@ class SerializablePersistenceImpl(WeiboTweetsAction):
         pass
 
 
-class FilePersistenceImpl(WeiboTweetsAction):
+class TxtPersistenceImpl(WeiboTweetsAction):
     """ export as txt file """
 
     def __init__(self,
                  name: str = None,
                  pages: int = None,
+                 export_file_path=None,
+                 export_file_name=None,
                  export_file_suffix: str = "txt",
                  is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
-                         export_file_path=None,
-                         export_file_name=None,
+                         export_file_path=export_file_path,
+                         export_file_name=export_file_name,
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
@@ -208,12 +225,14 @@ class JSONPersistenceImpl(WeiboTweetsAction):
     def __init__(self,
                  name: str = None,
                  pages: int = None,
+                 export_file_path=None,
+                 export_file_name=None,
                  export_file_suffix: str = "json",
                  is_simplify: bool = False) -> None:
         super().__init__(name=name,
                          pages=pages,
-                         export_file_path=None,
-                         export_file_name=None,
+                         export_file_path=export_file_path,
+                         export_file_name=export_file_name,
                          export_file_suffix=export_file_suffix,
                          is_simplify=is_simplify)
 
@@ -234,9 +253,27 @@ class JSONPersistenceImpl(WeiboTweetsAction):
                 json_file.write(bytes('\t\t\n', encoding='utf-8'))
 
 
-# filePst = FilePersistence()
-jsonPst = SerializablePersistenceImpl(name='Linux中国', pages=30, is_simplify=True)
-# jsonPst.execute()
-tPst = TweetsPersistence(action=jsonPst)
-tPst.persistence()
+def dispatch(name: str, pages: int=None, is_simplify: bool = True, persistence_format: str = "txt",export_file_path:str=None, export_file_name:str=None,is_debug:bool=False):
+    if not is_debug:
+        logging.getLogger().setLevel(logging.ERROR)
+    if persistence_format == 'txt':
+        pst = TxtPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify,export_file_path=export_file_path, export_file_name=export_file_name)
+    elif persistence_format == 'sql':
+        pst = SQLPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify,export_file_path=export_file_path, export_file_name=export_file_name)
+    elif persistence_format == 'html':
+        pst = HTMLPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify,export_file_path=export_file_path, export_file_name=export_file_name)
+    elif persistence_format == 'csv':
+        pst = CSVPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify,export_file_path=export_file_path, export_file_name=export_file_name)
+    elif persistence_format == 'pickle':
+        pst = SerializablePersistenceImpl(name=name, pages=pages, is_simplify=is_simplify,export_file_path=export_file_path, export_file_name=export_file_name)
+    elif persistence_format == 'json':
+        pst = JSONPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify,export_file_path=export_file_path, export_file_name=export_file_name)
+    else:
+        raise WeiboScraperPersistenceException("Unknown persistence format in [txt, sql ,html, csv, pickle]")
+    tpst = TweetsPersistence(action=pst)
+    tpst.persistence()
+
+if __name__ == '__main__':
+    dispatch(name='嘻红豆',pages=2,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=False)
+
 
