@@ -308,10 +308,6 @@ def formated_tweets_by_name(*args,**kwargs):
     pass
 
 
-def say_hi():
-    print("Hi")
-
-
 from samples import  tweets_persistence
 
 
