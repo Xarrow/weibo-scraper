@@ -7,3 +7,5 @@
  File: __init__.py
  Time: 6/9/18
 """
+
+from .tweets_persistence import dispatch
