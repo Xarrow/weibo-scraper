@@ -74,4 +74,9 @@ setup(
     cmdclass={
         'upload': UploadCommand,
     },
+    # packing to command tool interface
+    entry_points={
+        'console_scripts':['weibo-scraper=weibo_scraper:cli']
+    }
+
 )
