@@ -45,7 +45,7 @@ class UploadCommand(Command):
 
 
 setup(
-    version="1.0.6",
+    version="1.0.7-beta",
     long_description=long_description,
     long_description_content_type="text/markdown",
     name="weibo-scraper",
@@ -62,13 +62,13 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
-    install_requires=['requests'],
+    install_requires=['requests','docopt'],
     keywords="weibo scraper crawl",
     # If your package is a single module, use this instead of 'packages':
     py_modules=['weibo_scraper'],
     # If your package has custom module ,
     # Full list :https://docs.python.org/3.6/distutils/setupscript.html
-    packages=['weibo_base'],
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     python_requires='>=3.6',
     # $ setup.py publish support.
     cmdclass={
