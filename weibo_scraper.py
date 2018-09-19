@@ -342,7 +342,7 @@ Supported Formats:
     def export_to_file():
         arguments = docopt(cli_doc,version=weibo_scraper_with_version)
         name = arguments.get("<name>")
-        pages = int(arguments.get("<pages>") or 1)
+        pages = int(arguments.get("<pages>")) if arguments.get("<pages>") is not None else None
         format = arguments.get("<format>") or "txt"
         is_simplify = arguments.get("--si") or False
         exported_file_path = arguments.get("<exported_file_path>") or os.getcwd()
