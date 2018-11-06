@@ -308,10 +308,6 @@ def formated_tweets_by_name(*args,**kwargs):
     pass
 
 
-def say_hi():
-    print("Hi")
-
-
 from samples import  tweets_persistence
 
 
@@ -346,7 +342,7 @@ Supported Formats:
     def export_to_file():
         arguments = docopt(cli_doc,version=weibo_scraper_with_version)
         name = arguments.get("<name>")
-        pages = int(arguments.get("<pages>") or 1)
+        pages = int(arguments.get("<pages>")) if arguments.get("<pages>") is not None else None
         format = arguments.get("<format>") or "txt"
         is_simplify = arguments.get("--si") or False
         exported_file_path = arguments.get("<exported_file_path>") or os.getcwd()
@@ -361,13 +357,14 @@ Supported Formats:
                 more_description += "\n" + f.read()
             print(more_description)
             pass
-        tweets_persistence.dispatch(name=name,
-                                    pages=pages,
-                                    is_simplify=is_simplify,
-                                    persistence_format=format,
-                                    export_file_path=exported_file_path,
-                                    export_file_name=exported_file_name,
-                                    is_debug=is_debug,)
+        else:
+            tweets_persistence.dispatch(name=name,
+                                        pages=pages,
+                                        is_simplify=is_simplify,
+                                        persistence_format=format,
+                                        export_file_path=exported_file_path,
+                                        export_file_name=exported_file_name,
+                                        is_debug=is_debug,)
     export_to_file()
 
 

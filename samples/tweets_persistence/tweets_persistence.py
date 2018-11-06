@@ -273,7 +273,3 @@ def dispatch(name: str, pages: int=None, is_simplify: bool = True, persistence_f
     tpst = TweetsPersistence(action=pst)
     tpst.persistence()
 
-if __name__ == '__main__':
-    dispatch(name='嘻红豆',pages=2,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=False)
-
-
