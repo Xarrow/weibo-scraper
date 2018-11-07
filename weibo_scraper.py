@@ -308,7 +308,7 @@ def formated_tweets_by_name(*args,**kwargs):
     pass
 
 
-from samples import  tweets_persistence
+from samples import tweets_persistence
 
 
 def cli():
@@ -338,6 +338,7 @@ Options:
 Supported Formats:
    %(formats_lst)s
     """%dict(formats_lst=formats_lst)
+
     @rt_logger
     def export_to_file():
         arguments = docopt(cli_doc,version=weibo_scraper_with_version)

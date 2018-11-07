@@ -120,8 +120,14 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_txt_export(self):
         from samples.tweets_persistence import tweets_persistence
-        tweets_persistence.dispatch(name='嘻红豆',pages=2,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=True)
+        tweets_persistence.dispatch(name='嘻红豆',pages=None,is_simplify=True, persistence_format="txt",export_file_name="梁群茹1",is_debug=True)
 
+
+class TestWeiboBaseApi(unittest.main):
+    def test_login(self):
+        from weibo_base import  WeiboV2
+        wb = WeiboV2(username="",password="")
+        wb.login_for_sso()
 
 if __name__ == '__main__':
     unittest.main()
