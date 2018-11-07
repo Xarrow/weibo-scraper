@@ -118,9 +118,9 @@ class TestWeiboScraper(unittest.TestCase):
         wcp = WeiboCommentsParser(weibo_comments_res)
         print(wcp.inner_data_node)
 
-    # def test_txt_export(self):
-    #     from samples.tweets_persistence import tweets_persistence
-    #     tweets_persistence.dispatch(name='嘻红豆',pages=2,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=True)
+    def test_txt_export(self):
+        from samples.tweets_persistence import tweets_persistence
+        tweets_persistence.dispatch(name='嘻红豆',pages=1,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=True)
 
 
 if __name__ == '__main__':
