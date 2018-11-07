@@ -120,7 +120,7 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_txt_export(self):
         from samples.tweets_persistence import tweets_persistence
-        tweets_persistence.dispatch(name='嘻红豆',pages=1,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=True)
+        tweets_persistence.dispatch(name='嘻红豆', pages=1,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=True)
 
 
 if __name__ == '__main__':
