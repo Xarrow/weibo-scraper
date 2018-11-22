@@ -6,16 +6,17 @@
  File: weibo_scraper.py
  Time: 3/16/18
 """
+import datetime
 import io
 import os
-import datetime
 import sys
-from docopt import docopt
-from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
+
+from docopt import docopt
+
 from weibo_base import exist_get_uid, \
     get_tweet_containerid, weibo_tweets, weibo_getIndex, weibo_second, UserMeta, WeiboTweetParser, WeiboGetIndexParser, \
-    FollowAndFollowerParser,rt_logger
+    FollowAndFollowerParser, rt_logger, weibo_comments, WeiboCommentsParser
 
 try:
     assert sys.version_info.major == 3
@@ -40,7 +41,7 @@ class WeiBoScraperException(Exception):
 
 def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     """
-    Get weibo tweets by nick name without any authorization
+    Get raw weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_weibo_tweets_by_name
     >>> for tweet in get_weibo_tweets_by_name(name='嘻红豆', pages=1):
     >>>     print(tweet)
@@ -50,9 +51,9 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     """
     if name == '':
         raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
-    _egu_res = exist_get_uid(name=name)
-    exist = _egu_res.get("exist")
-    uid = _egu_res.get("uid")
+    egu_res = exist_get_uid(name=name)
+    exist = egu_res.get("exist")
+    uid = egu_res.get("uid")
     if exist:
         inner_tweet_containerid = get_tweet_containerid(uid=uid)
         yield from get_weibo_tweets(tweet_container_id=inner_tweet_containerid, pages=pages)
@@ -69,11 +70,10 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     1. Search by Nname and get uid by this api "https://m.weibo.cn/api/container/getIndex?queryVal=来去之间&containerid=100103type%3D3%26q%3D来去之间"
     2. Get profile info by uid , https://m.weibo.cn/api/container/getIndex?type=uid&value=1111681197
     3. https://m.weibo.cn/api/container/getIndex?containerid=2302831111681197
-    3. Get weibo tweets by container in node of "tabs" ,https://m.weibo.cn/api/container/getIndex?containerid=2304131111681197_-_&page=6891
+    4. Get weibo tweets by container in node of "tabs" ,https://m.weibo.cn/api/container/getIndex?containerid=2304131111681197_-_&page=6891
     >>> from weibo_scraper import  get_weibo_tweets
     >>> for tweet in get_weibo_tweets(tweet_container_id='1076033637346297',pages=1):
     >>>     print(tweet)
-    >>> ....
     :param tweet_container_id:  request weibo tweets directly by tweet_container_id
     :param pages :default None
     :return _TweetsResponse
@@ -107,7 +107,7 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     yield from gen()
 
 
-def get_formatted_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
+def get_formatted_weibo_tweets_by_name(name: str, with_comments:bool = False , pages: int = None) -> _TweetsResponse:
     """
     Get formatted weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
@@ -121,20 +121,19 @@ def get_formatted_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsR
     """
     if name == '':
         raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
-    _egu_res = exist_get_uid(name=name)
-    exist = _egu_res.get("exist")
-    uid = _egu_res.get("uid")
+    egu_res = exist_get_uid(name=name)
+    exist = egu_res.get("exist")
+    uid = egu_res.get("uid")
     if exist:
         inner_tweet_containerid = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid, pages=pages)
+        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid,with_comments=with_comments, pages=pages)
     else:
         yield None
 
 
-def get_weibo_tweets_formatted(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
-
+def get_weibo_tweets_formatted(tweet_container_id: str,with_comments:bool, pages: int = None) -> _TweetsResponse:
     """
-    Get weibo formatted tweets
+    Get weibo formatted tweets by container id
 
     Compatibility:
     New Api
@@ -145,13 +144,12 @@ def get_weibo_tweets_formatted(tweet_container_id: str, pages: int = None) -> _T
     >>> from weibo_scraper import  get_weibo_tweets_formatted
     >>> for tweet in get_weibo_tweets_formatted(tweet_container_id='1076033637346297',pages=1):
     >>>     print(tweet)
-    >>> ....
     :param tweet_container_id:  request weibo tweets directly by tweet_container_id
     :param pages :default None
     :return _TweetsResponse
     """
 
-    def gen(_inner_current_page=1):
+    def weibo_tweets_gen(_inner_current_page=1):
         while True:
             if pages is not None and _inner_current_page > pages:
                 break
@@ -165,7 +163,21 @@ def get_weibo_tweets_formatted(tweet_container_id: str, pages: int = None) -> _T
             yield weibo_tweet_parser
             _inner_current_page += 1
 
-    yield from gen()
+    def weibo_comments_gen():
+        wtg = weibo_tweets_gen()
+        for i in wtg:
+            for j in i.cards_node:
+                _id = j.mblog.id
+                _mid = j.mblog.mid
+                _tweets_comments_parser = WeiboCommentsParser(comments_node = weibo_comments(id=_id,mid=_mid))
+                print(_tweets_comments_parser.comments_node)
+                # FIXME
+                j.mblog.comments_parser = _tweets_comments_parser
+            yield i
+    if with_comments:
+        yield from weibo_comments_gen()
+    else:
+        yield from weibo_tweets_gen()
 
 
 def weibo_get_index_parser(name: str = None, uid: str = None) -> _WeiboGetIndexResponse:
@@ -196,7 +208,6 @@ def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
     Get weibo profile
     >>> from weibo_scraper import get_weibo_profile
     >>> weibo_profile = get_weibo_profile(name='嘻红豆',)
-    >>> ...weibo_profile
     :param uid: uid
     :param name: name
     :return: UserMeta
@@ -211,7 +222,6 @@ FOLLOW_FLAG = 0
 
 
 def get_follows_and_followers(name: str = None, uid: str = None, pages: int = None, invoke_flag: int = FOLLOW_FLAG):
-
     """
     Get follows and followers by name or uid limit by pages
     :param invoke_flag: 0-follow , 1-follower
@@ -259,7 +269,6 @@ def get_follows(name: str = None, uid: str = None, pages: int = None, max_entry_
     :param name:
     :param uid:
     :param pages:
-    :param max_pages_limit:
     :return:
     """
     current_total_pages = 0
@@ -290,7 +299,7 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_entr
 
     """
     current_total_pages = 0
-    followers_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages,invoke_flag=1)
+    followers_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages, invoke_flag=1)
     for follower in followers_iterator:
         if follower is None:
             yield None
@@ -304,7 +313,7 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_entr
 
 # -------------------- simplify method name ----------------
 
-def formated_tweets_by_name(*args,**kwargs):
+def formated_tweets_by_name(*args, **kwargs):
     pass
 
 
@@ -337,11 +346,11 @@ Options:
   -v --version                 show version.
 Supported Formats:
    %(formats_lst)s
-    """%dict(formats_lst=formats_lst)
+    """ % dict(formats_lst=formats_lst)
 
     @rt_logger
     def export_to_file():
-        arguments = docopt(cli_doc,version=weibo_scraper_with_version)
+        arguments = docopt(cli_doc, version=weibo_scraper_with_version)
         name = arguments.get("<name>")
         pages = int(arguments.get("<pages>")) if arguments.get("<pages>") is not None else None
         format = arguments.get("<format>") or "txt"
@@ -354,7 +363,7 @@ Supported Formats:
         if more:
             more_description = weibo_scraper_with_version
             here = os.path.abspath(os.path.dirname(__file__))
-            with io.open(os.path.join(here,"README.md"), encoding="UTF-8") as f:
+            with io.open(os.path.join(here, "README.md"), encoding="UTF-8") as f:
                 more_description += "\n" + f.read()
             print(more_description)
             pass
@@ -365,7 +374,8 @@ Supported Formats:
                                         persistence_format=format,
                                         export_file_path=exported_file_path,
                                         export_file_name=exported_file_name,
-                                        is_debug=is_debug,)
+                                        is_debug=is_debug, )
+
     export_to_file()
 
 
