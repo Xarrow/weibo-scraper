@@ -24,7 +24,6 @@ _GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 _COMMENTS_HOTFLOW = "https://m.weibo.cn/comments/hotflow"
 
 
-
 class WeiboApiException(Exception):
     def __init__(self, message):
         self.message = message
@@ -107,7 +106,8 @@ def weibo_second(containerid: str, page: int) -> Response:
         return _response.json()
     return None
 
-def weibo_comments(id:str,mid:str)->Response:
+
+def weibo_comments(id: str, mid: str) -> Response:
     """
     https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
     get comments from userId and mid
@@ -115,9 +115,9 @@ def weibo_comments(id:str,mid:str)->Response:
     :param mid:         mid
     :return:
     """
-    _params = {"id":id, "mid":mid}
-    _response = requests.get(url=_COMMENTS_HOTFLOW,params=_params)
-    if _response.status_code==200:
+    _params = {"id": id, "mid": mid}
+    _response = requests.get(url=_COMMENTS_HOTFLOW, params=_params)
+    if _response.status_code == 200:
         return _response.json()
     return None
 
@@ -172,6 +172,8 @@ _JSONResponse = Optional[dict]
 _StrFieldResponse = Optional[str]
 _IntFieldResponse = Optional[int]
 
+
+# ========== User Metadata ===============
 
 class UserMeta(object):
     """weibo user meta data """
@@ -230,6 +232,108 @@ class UserMeta(object):
                                                 repr(self.avatar_hd), repr(self.profile_image_url))
 
 
+# ============== Comments Metadata======================
+
+class CommentMeta(object):
+    __slots__ = ["single_comment_node"]
+
+    def __init__(self, single_comment_node: _JSONResponse) -> None:
+        self.single_comment_node = single_comment_node
+
+    @property
+    def raw_single_comment_node(self) -> _JSONResponse:
+        return self.single_comment_node
+
+    @property
+    def created_at(self) -> _StrFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("created_at")
+
+    @property
+    def id(self) -> _StrFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("id")
+
+    @property
+    def rootid(self) -> _JSONResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("rootid")
+
+    @property
+    def floor_number(self) -> _JSONResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("floor_number")
+
+    @property
+    def text(self) -> _JSONResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("text")
+
+    @property
+    def user(self) -> Optional[UserMeta]:
+        return None if self.single_comment_node is None else UserMeta(user_node=self.single_comment_node.get("user"))
+
+    @property
+    def mid(self) -> _StrFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("mid")
+
+    @property
+    def comments(self):
+        return None if self.single_comment_node is None else self.single_comment_node.get("comments")
+
+    @property
+    def max_id(self) -> _IntFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("max_id")
+
+    @property
+    def total_number(self) -> _IntFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("total_number")
+
+    @property
+    def isLikedByMblogAuthor(self):
+        return None if self.single_comment_node is None else self.single_comment_node.get("isLikedByMblogAuthor")
+
+    @property
+    def bid(self) -> _StrFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("bid")
+
+    @property
+    def source(self) -> _StrFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("source")
+
+    @property
+    def like_count(self) -> _IntFieldResponse:
+        return None if self.single_comment_node is None else self.single_comment_node.get("like_count")
+
+    def __repr__(self):
+        return r"<CommentMeta id={} , mid = {} , text={} >".format(repr(self.id), repr(self.mid), repr(self.text))
+
+
+_ListCommentsNode = List[CommentMeta]
+
+
+class WeiboCommentsParser(object):
+    """ weibo comments structure
+        sample as :https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
+    """
+
+    __slots__ = ['comments_node']
+
+    def __init__(self, comments_node: _JSONResponse) -> None:
+        self.comments_node = comments_node
+
+    @property
+    def outer_data_node(self) -> _JSONResponse:
+        if self.comments_node.get("data") is None:
+            return None
+        return self.comments_node.get("data")
+
+    @property
+    def total_number(self) -> _IntFieldResponse:
+        return None if self.outer_data_node is None else self.outer_data_node.get("total_number")
+
+    @property
+    def inner_data_node(self) -> _ListCommentsNode:
+        return None if self.outer_data_node is None \
+            else [CommentMeta(single_comment_node=single_comment_node)
+                  for single_comment_node in self.outer_data_node.get("data")]
+
+
 class PicMeta(object):
     def __init__(self, pic_node: dict) -> None:
         self.pic_node = pic_node
@@ -252,10 +356,11 @@ class PicMeta(object):
 
 
 class MBlogMeta(object):
-    __slots__ = ['mblog_node']
+    # __slots__ = ['mblog_node']
 
-    def __init__(self, mblog_node):
+    def __init__(self, mblog_node , comments_parser =None):
         self.mblog_node = mblog_node
+        self._comments_parser = None
 
     @property
     def raw_mblog(self) -> _JSONResponse:
@@ -325,6 +430,21 @@ class MBlogMeta(object):
     def pics_node(self):
         return [PicMeta(pic) for pic in self.mblog_node.get('pics')] if self.mblog_node.get(
             'pics') is not None else None
+
+    @property
+    def comments_node(self):
+        return self._comments_parser
+
+    @comments_node.setter
+    def comments_node(self, value):
+        self._comments_parser = value
+
+    # @comments_node.setter
+    # def comments_node(self, comments_node_parser: WeiboCommentsParser):
+    #     if isinstance(comments_node_parser, WeiboCommentsParser):
+    #         self.comments_parser = comments_node_parser
+    #     else:
+    #         self.comments_parser = None
 
 
 class TweetMeta(object):
@@ -554,111 +674,6 @@ class FollowAndFollowerParser(object):
 
     def __repr__(self):
         return "<FollowAndFollowerParser container={} >".format(repr(self.containerid))
-
-
-# ------------------------------- comments ----------------------------
-
-class SingleCommentNode(object):
-
-    __slots__ = ["single_comment_node"]
-
-    def __init__(self,single_comment_node:_JSONResponse)->None:
-        self.single_comment_node = single_comment_node
-
-    @property
-    def raw_single_comment_node(self)->_JSONResponse:
-        return self.single_comment_node
-    @property
-    def created_at(self)->_StrFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("created_at")
-    @property
-    def id(self)->_StrFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("id")
-
-    @property
-    def rootid(self)->_JSONResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("rootid")
-
-    @property
-    def floor_number(self)->_JSONResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("floor_number")
-
-    @property
-    def text(self)->_JSONResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("text")
-
-    @property
-    def user(self)->Optional[UserMeta]:
-        return None if self.single_comment_node is None else UserMeta(user_node=self.single_comment_node.get("user"))
-
-    @property
-    def mid(self)->_StrFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("mid")
-
-    @property
-    def comments(self):
-        return None if self.single_comment_node is None else self.single_comment_node.get("comments")
-
-    @property
-    def max_id(self)->_IntFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("max_id")
-
-    @property
-    def total_number(self)->_IntFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("total_number")
-
-    @property
-    def isLikedByMblogAuthor(self):
-        return None if self.single_comment_node is None else self.single_comment_node.get("isLikedByMblogAuthor")
-
-    @property
-    def bid(self)->_StrFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("bid")
-
-    @property
-    def source(self)->_StrFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("source")
-
-    @property
-    def like_count(self)->_IntFieldResponse:
-        return None if self.single_comment_node is None else self.single_comment_node.get("like_count")
-
-
-    def __repr__(self):
-        return r"<SingleCommentNode id={} , mid = {} , text={} >".format(repr(self.id),repr(self.mid),repr(self.text))
-
-
-_ListCommentsNode = List[SingleCommentNode]
-
-
-class WeiboCommentsParser(object):
-
-    """ weibo comments structure
-        sample as :https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
-    """
-
-    __slots__ = ['comments_node']
-
-    def __init__(self,comments_node:_JSONResponse)->None:
-        self.comments_node = comments_node
-
-    @property
-    def outer_data_node(self)->_JSONResponse:
-        if self.comments_node.get("data") is None:
-            return None
-        return self.comments_node.get("data")
-
-    @property
-    def total_number(self)->_IntFieldResponse:
-        return None if self.outer_data_node is None else self.outer_data_node.get("total_number")
-
-    @property
-    def inner_data_node(self)->_ListCommentsNode:
-        return None if self.outer_data_node is None \
-            else [SingleCommentNode(single_comment_node=single_comment_node)
-                  for single_comment_node in self.outer_data_node.get("data")]
-
-
 
 
 # ----------------------------------- 前方高能 ---------------------------
