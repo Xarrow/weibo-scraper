@@ -7,8 +7,19 @@
  Time: 5/19/18
  Descripton:  weibo_util is in common use
 """
+import logging
+
 from contextlib import contextmanager
 from time import time
+
+level = logging.DEBUG
+format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+datefmt = '%Y-%m-%d %H:%M'
+logging.basicConfig(level=level, format=format, datefmt=datefmt)
+logger = logging.getLogger(__name__)
+logger.setLevel(level)
+
+is_debug = logger.level == logging.DEBUG
 
 
 def rt_logger(func):
@@ -28,4 +39,3 @@ def open_file(file_name: str):
     yield file
     file.flush()
     file.close()
-
