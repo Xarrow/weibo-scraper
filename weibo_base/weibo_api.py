@@ -304,7 +304,7 @@ class CommentMeta(object):
         return r"<CommentMeta id={} , mid = {} , text={} >".format(repr(self.id), repr(self.mid), repr(self.text))
 
 
-_ListCommentsNode = List[CommentMeta]
+_ListCommentMeta = List[CommentMeta]
 
 
 class WeiboCommentsParser(object):
@@ -328,7 +328,7 @@ class WeiboCommentsParser(object):
         return None if self.outer_data_node is None else self.outer_data_node.get("total_number")
 
     @property
-    def inner_data_node(self) -> _ListCommentsNode:
+    def comment_meta(self) -> _ListCommentMeta:
         return None if self.outer_data_node is None \
             else [CommentMeta(single_comment_node=single_comment_node)
                   for single_comment_node in self.outer_data_node.get("data")]
@@ -356,11 +356,10 @@ class PicMeta(object):
 
 
 class MBlogMeta(object):
-    # __slots__ = ['mblog_node']
+    __slots__ = ['mblog_node',]
 
-    def __init__(self, mblog_node , comments_parser =None):
+    def __init__(self, mblog_node):
         self.mblog_node = mblog_node
-        self._comments_parser = None
 
     @property
     def raw_mblog(self) -> _JSONResponse:
@@ -431,33 +430,22 @@ class MBlogMeta(object):
         return [PicMeta(pic) for pic in self.mblog_node.get('pics')] if self.mblog_node.get(
             'pics') is not None else None
 
-    @property
-    def comments_node(self):
-        return self._comments_parser
-
-    @comments_node.setter
-    def comments_node(self, value):
-        self._comments_parser = value
-
-    # @comments_node.setter
-    # def comments_node(self, comments_node_parser: WeiboCommentsParser):
-    #     if isinstance(comments_node_parser, WeiboCommentsParser):
-    #         self.comments_parser = comments_node_parser
-    #     else:
-    #         self.comments_parser = None
-
 
 class TweetMeta(object):
     """ weibo tweet meta data"""
 
-    __slots__ = ['card_node']
+    __slots__ = ['card_node', '_comment_parser', ]
 
     def __init__(self, card_node: dict) -> None:
         self.card_node = card_node
 
     @property
-    def raw_card(self) -> dict:
+    def raw_card_node(self) -> dict:
         return self.card_node
+
+    @raw_card_node.setter
+    def raw_card_node(self ,value:dict):
+        self.raw_card_node = value
 
     @property
     def itemid(self) -> _StrFieldResponse:
@@ -470,6 +458,14 @@ class TweetMeta(object):
     @property
     def mblog(self) -> MBlogMeta:
         return MBlogMeta(mblog_node=self.card_node.get('mblog'))
+
+    @property
+    def comment_parser(self) -> WeiboCommentsParser:
+        return self._comment_parser
+
+    @comment_parser.setter
+    def comment_parser(self, value: WeiboCommentsParser):
+        self._comment_parser = value
 
 
 _ListTweetMetaFieldResponse = List[TweetMeta]
@@ -489,16 +485,28 @@ _ListTweetMetaFieldResponse = List[TweetMeta]
 
 
 class WeiboTweetParser(object):
-    __slots__ = ['tweet_containerid', 'tweet_get_index_reponse']
+    __slots__ = ['tweet_containerid', 'tweet_get_index_reponse', '_cards_node']
 
     def __init__(self, tweet_get_index_response: dict = None, tweet_containerid: str = None) -> None:
+        if tweet_get_index_response is None and tweet_containerid is None:
+            raise WeiboApiException("WeiboTweetParser#__init__  tweet_get_index_response and tweet_containerid is none !")
+
         self.tweet_containerid = tweet_containerid
+
         self.tweet_get_index_reponse = weibo_tweets(containerid=tweet_containerid) \
-            if tweet_get_index_response is None and tweet_containerid is not None else tweet_get_index_response
+            if tweet_get_index_response is None and tweet_containerid is not None \
+            else tweet_get_index_response
+
+        self._cards_node = [TweetMeta(card_node=card) for card in list(
+            filter(lambda card: card.get('card_group') is None, self.tweet_get_index_reponse.get('data').get('cards')))]
 
     @property
     def raw_tweet_response(self) -> _JSONResponse:
         return self.tweet_get_index_reponse
+
+    @raw_tweet_response
+    def raw_tweet_response(self ,value:dict):
+        self.tweet_get_index_reponse = value
 
     @property
     def card_list_info_node(self) -> _JSONResponse:
@@ -507,8 +515,11 @@ class WeiboTweetParser(object):
     @property
     def cards_node(self) -> _ListTweetMetaFieldResponse:
         # skip  recommended weibo tweet
-        return [TweetMeta(card_node=card) for card in list(
-            filter(lambda card: card.get('card_group') is None, self.tweet_get_index_reponse.get('data').get('cards')))]
+        return self._cards_node
+
+    @cards_node.setter
+    def cards_node(self, value):
+        self._cards_node = value
 
     @property
     def tweet_containerid_node(self) -> _StrFieldResponse:
@@ -607,8 +618,8 @@ class WeiboGetIndexParser(object):
             _response_include_tweetid = weibo_tweets(containerid=self.profile_containerid, page=0)
             _cards = _response_include_tweetid.get('data').get('cards')
             return re.findall(r'containerid=(.+?)WEIBO_SECOND',
-                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0].get('scheme'))[
-                0]
+                              list(filter(lambda _card: _card.get('itemid') == 'more_weibo', _cards))[0]
+                              .get('scheme'))[0]
         else:
             return None
 

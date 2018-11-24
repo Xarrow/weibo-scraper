@@ -166,13 +166,15 @@ def get_weibo_tweets_formatted(tweet_container_id: str,with_comments:bool, pages
     def weibo_comments_gen():
         wtg = weibo_tweets_gen()
         for i in wtg:
+            ll = []
             for j in i.cards_node:
                 _id = j.mblog.id
                 _mid = j.mblog.mid
-                _tweets_comments_parser = WeiboCommentsParser(comments_node = weibo_comments(id=_id,mid=_mid))
-                print(_tweets_comments_parser.comments_node)
-                # FIXME
-                j.mblog.comments_parser = _tweets_comments_parser
+
+                _tweets_comments_parser = WeiboCommentsParser(weibo_comments(id=_id,mid=_mid))
+                j.comment_parser = _tweets_comments_parser
+                ll.append(j)
+            i.cards_node = ll
             yield i
     if with_comments:
         yield from weibo_comments_gen()
