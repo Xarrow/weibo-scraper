@@ -101,11 +101,11 @@ class TestWeiboScraper(unittest.TestCase):
         print(wp_uid.raw_user_response)
 
     def test_follows_and_followers(self):
-        for user in weibo_scraper.get_follows(name='嘻红豆', max_entry_limit=1):
+        for user in weibo_scraper.get_follows(name='嘻红豆', max_item_limit=1):
             print(user)
 
         print("==" * 10)
-        for user in weibo_scraper.get_followers(name='嘻红豆', max_entry_limit=1):
+        for user in weibo_scraper.get_followers(name='嘻红豆', max_item_limit=1):
             print(user)
 
     def test_comments_request_with_structure(self):

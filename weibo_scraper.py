@@ -301,14 +301,14 @@ def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_l
                 current_total_pages += 1
 
 
-def get_followers(name: str = None, uid: str = None, pages: int = None, max_entry_limit: int = None):
+def get_followers(name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None):
     """
     Get weibo follower by name, 粉丝
     XIHONGDOU's fans
     https://m.weibo.cn/api/container/getIndex?containerid=231051_-_followers_-_3637346297&page=0
     https://m.weibo.cn/api/container/getSecond?containerid=1005053637346297_-_FOLLOWERS&page=0
 
-    :param max_entry_limit:
+    :param max_item_limit:
     :param pages:
     :param uid:
     :param name:
@@ -322,7 +322,7 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_entr
             yield None
         else:
             for user in follower.user_list:
-                if max_entry_limit is not None and current_total_pages >= max_entry_limit:
+                if max_item_limit is not None and current_total_pages >= max_item_limit:
                     return
                 yield user
                 current_total_pages += 1
