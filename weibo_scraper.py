@@ -14,9 +14,13 @@ from typing import Iterator, Optional
 
 from docopt import docopt
 
-from weibo_base import exist_get_uid, \
-    get_tweet_containerid, weibo_tweets, weibo_getIndex, weibo_second, UserMeta, WeiboTweetParser, WeiboGetIndexParser, \
-    FollowAndFollowerParser, rt_logger, weibo_comments, WeiboCommentsParser
+from weibo_base.weibo_util import logger
+
+from weibo_base.weibo_component import exist_get_uid, get_tweet_containerid
+from weibo_base.weibo_parser import WeiboCommentParser, WeiboGetIndexParser, UserMeta, WeiboTweetParser, \
+    FollowAndFollowerParser
+from weibo_base.weibo_api import weibo_tweets, weibo_getIndex, weibo_second, weibo_comments
+from weibo_base.weibo_util import rt_logger
 
 try:
     assert sys.version_info.major == 3
@@ -107,7 +111,7 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     yield from gen()
 
 
-def get_formatted_weibo_tweets_by_name(name: str, with_comments:bool = False , pages: int = None) -> _TweetsResponse:
+def get_formatted_weibo_tweets_by_name(name: str, with_comments: bool = False, pages: int = None) -> _TweetsResponse:
     """
     Get formatted weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
@@ -126,12 +130,13 @@ def get_formatted_weibo_tweets_by_name(name: str, with_comments:bool = False , p
     uid = egu_res.get("uid")
     if exist:
         inner_tweet_containerid = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid,with_comments=with_comments, pages=pages)
+        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid, with_comments=with_comments,
+                                              pages=pages)
     else:
         yield None
 
 
-def get_weibo_tweets_formatted(tweet_container_id: str,with_comments:bool, pages: int = None) -> _TweetsResponse:
+def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pages: int = None,max_item_limit:int =None) -> _TweetsResponse:
     """
     Get weibo formatted tweets by container id
 
@@ -144,38 +149,48 @@ def get_weibo_tweets_formatted(tweet_container_id: str,with_comments:bool, pages
     >>> from weibo_scraper import  get_weibo_tweets_formatted
     >>> for tweet in get_weibo_tweets_formatted(tweet_container_id='1076033637346297',pages=1):
     >>>     print(tweet)
+    :param max_item_limit:
+    :param with_comments:
     :param tweet_container_id:  request weibo tweets directly by tweet_container_id
     :param pages :default None
     :return _TweetsResponse
     """
+    # TODO max items limit
+    current_total_item = 0
 
     def weibo_tweets_gen(_inner_current_page=1):
         while True:
             if pages is not None and _inner_current_page > pages:
                 break
-            _response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page)
+            tweet_response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page)
             # skip bad request
-            if _response_json is None:
+            if tweet_response_json is None:
                 continue
-            elif _response_json.get("ok") != 1:
+            elif tweet_response_json.get("ok") != 1:
                 break
-            weibo_tweet_parser = WeiboTweetParser(tweet_get_index_response=_response_json)
+            weibo_tweet_parser = WeiboTweetParser(tweet_get_index_response=tweet_response_json)
             yield weibo_tweet_parser
             _inner_current_page += 1
 
     def weibo_comments_gen():
         wtg = weibo_tweets_gen()
         for i in wtg:
-            ll = []
             for j in i.cards_node:
-                _id = j.mblog.id
-                _mid = j.mblog.mid
-
-                _tweets_comments_parser = WeiboCommentsParser(weibo_comments(id=_id,mid=_mid))
-                j.comment_parser = _tweets_comments_parser
-                ll.append(j)
-            i.cards_node = ll
+                id = j.mblog.id
+                mid = j.mblog.mid
+                global comment_response
+                try:
+                    comment_response = weibo_comments(id=id, mid=mid)
+                    tweet_comment_parser = WeiboCommentParser(comment_response)
+                    j.mblog.comment_parser = tweet_comment_parser
+                except Exception as ex:
+                    logger.error(
+                        "#get_weibo_tweets_formatted.weibo_comments_gen request weibo comment occurred an exception, ex=%s,comment_response=%s" % (
+                            ex, comment_response))
+                    j.mblog.comment_parser = None
+                    pass
             yield i
+
     if with_comments:
         yield from weibo_comments_gen()
     else:
@@ -264,7 +279,7 @@ def get_follows_and_followers(name: str = None, uid: str = None, pages: int = No
         yield from gen_follows_and_followers()
 
 
-def get_follows(name: str = None, uid: str = None, pages: int = None, max_entry_limit: int = None):
+def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None):
     """
 
     :param max_entry_limit:
@@ -280,7 +295,7 @@ def get_follows(name: str = None, uid: str = None, pages: int = None, max_entry_
             yield None
         else:
             for user in follow.user_list:
-                if max_entry_limit is not None and current_total_pages >= max_entry_limit:
+                if max_item_limit is not None and current_total_pages >= max_item_limit:
                     return
                 yield user
                 current_total_pages += 1
