@@ -101,11 +101,11 @@ class TestWeiboScraper(unittest.TestCase):
         print(wp_uid.raw_user_response)
 
     def test_follows_and_followers(self):
-        for user in weibo_scraper.get_follows(name='嘻红豆', max_entry_limit=1):
+        for user in weibo_scraper.get_follows(name='嘻红豆', max_item_limit=1):
             print(user)
 
-        print("=="*10)
-        for user in weibo_scraper.get_followers(name='嘻红豆',max_entry_limit=1):
+        print("==" * 10)
+        for user in weibo_scraper.get_followers(name='嘻红豆', max_item_limit=1):
             print(user)
 
     def test_comments_request_with_structure(self):
@@ -114,13 +114,20 @@ class TestWeiboScraper(unittest.TestCase):
         :return:
         """
 
-        weibo_comments_res = weibo_comments(id="4257059677028285",mid='4257059677028285')
-        wcp = WeiboCommentsParser(weibo_comments_res)
-        print(wcp.inner_data_node)
+        weibo_comments_res = weibo_comments(id="4257059677028285", mid='4257059677028285')
+        wcp = WeiboCommentParser(weibo_comments_res)
+        print(wcp.comment_meta)
 
     def test_txt_export(self):
         from samples.tweets_persistence import tweets_persistence
-        tweets_persistence.dispatch(name='嘻红豆', pages=1,is_simplify=True, persistence_format="txt",export_file_name="梁群茹txt",is_debug=True)
+        tweets_persistence.dispatch(name='嘻红豆', pages=1, is_simplify=True, persistence_format="txt",
+                                    export_file_name="梁群茹2txt", is_debug=True)
+
+    def test_weibo_tweets_with_comments(self):
+        """weibo comments"""
+        for i in weibo_scraper.get_formatted_weibo_tweets_by_name(name='嘻红豆', with_comments=True, pages=1):
+            for j in i.cards_node:
+                print(str(j.mblog.comment_parser))
 
 
 if __name__ == '__main__':
