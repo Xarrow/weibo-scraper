@@ -30,7 +30,7 @@ def cli():
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-u", type=str, required=False, help="username [nickname] which want to exported")
-    parser.add_argument("-p", type=int, required=False, default=1, help="pages which exported [ default 1 page ]")
+    parser.add_argument("-p", type=int, required=False, default=None, help="pages which exported [ default 1 page ]")
 
     parser.add_argument("-o", type=str, required=False, default=os.getcwd(),
                         help="output file path which expected [ default 'current dir' ]")
