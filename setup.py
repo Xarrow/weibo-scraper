@@ -62,10 +62,10 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
-    install_requires=['requests','docopt'],
+    install_requires=['requests'],
     keywords="weibo scraper crawl",
     # If your package is a single module, use this instead of 'packages':
-    py_modules=['weibo_scraper'],
+    py_modules=['weibo_scraper','weibo_scraper_cli'],
     # If your package has custom module ,
     # Full list :https://docs.python.org/3.6/distutils/setupscript.html
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
@@ -76,7 +76,7 @@ setup(
     },
     # packing to command tool interface
     entry_points={
-        'console_scripts':['weibo-scraper=weibo_scraper:cli']
+        'console_scripts':['weibo-scraper=weibo_scraper_cli:cli']
     }
 
 )
