@@ -17,11 +17,6 @@ import pickle
 from weibo_scraper import get_formatted_weibo_tweets_by_name
 from weibo_base import rt_logger
 
-level = logging.DEBUG
-format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-datefmt = '%Y-%m-%d %H:%M'
-logging.basicConfig(level=level, format=format, datefmt=datefmt)
-logger = logging.getLogger(__name__)
 
 DEFAULT_EXPORT_FILENAME = "export_%s" % int(time.time())
 DEFAULT_EXPORT_PATH = os.getcwd()
@@ -206,7 +201,9 @@ class TxtPersistenceImpl(WeiboTweetsAction):
                         for pic in tweet_meta.mblog.pics_node:
                             single_line = single_line + pic.large_url + "\t\t"
                 else:
-                    single_line = str(tweet_meta.raw_card)
+                    # FIXME  upgrade weibo_base.py
+                    single_line = str(tweet_meta.raw_card_node)
+
                 single_line += "\t\t\n"
                 text_file.write(bytes(single_line, encoding='utf-8'))
 

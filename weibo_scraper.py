@@ -7,26 +7,20 @@
  Time: 3/16/18
 """
 import datetime
-import io
-import os
 import sys
 from typing import Iterator, Optional
 
-from docopt import docopt
-
-from weibo_base.weibo_util import logger
-
+from weibo_base.weibo_api import weibo_tweets, weibo_getIndex, weibo_second, weibo_comments
 from weibo_base.weibo_component import exist_get_uid, get_tweet_containerid
 from weibo_base.weibo_parser import WeiboCommentParser, WeiboGetIndexParser, UserMeta, WeiboTweetParser, \
     FollowAndFollowerParser
-from weibo_base.weibo_api import weibo_tweets, weibo_getIndex, weibo_second, weibo_comments
-from weibo_base.weibo_util import rt_logger
+from weibo_base.weibo_util import logger
 
 try:
     assert sys.version_info.major == 3
     assert sys.version_info.minor >= 6
 except AssertionError:
-    raise RuntimeError('weibo-scrapy requires Python3.6+ !')
+    raise RuntimeError('weibo-scraper requires Python3.6+ !')
 
 now = datetime.datetime.now()
 CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
@@ -282,7 +276,7 @@ def get_follows_and_followers(name: str = None, uid: str = None, pages: int = No
 def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None):
     """
 
-    :param max_entry_limit:
+    :param max_item_limit:
     :param name:
     :param uid:
     :param pages:
@@ -332,69 +326,3 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_item
 
 def formated_tweets_by_name(*args, **kwargs):
     pass
-
-
-from samples import tweets_persistence
-
-
-def cli():
-    """weibo-cli"""
-    weibo_scraper_with_version = "weibo-scraper 1.0.6 🚀"
-    weibo_scraper_supported_formats = "txt pickle".split()
-    formats_lst = ', '.join(weibo_scraper_supported_formats)
-
-    cli_doc = """
-Usage:
-    weibo-scraper.py -u <name>
-    weibo-scraper.py -u <name> --si
-    weibo-scraper.py -u <name> [-p <pages>] [-f <format>] [-o <exported_file_path>] [-fname <exported_file_name>] [--si] [--debug] [--more]
-    weibo-scraper.py -h [--help]
-    weibo-scraper.py -v [--version]
-Options:
-  -u                           weibo nickname which exported.
-  -p --pages                   pages which exported [ default one page ].
-  -f --format                  format which exported [ default "txt" , support for %(formats_lst)s ].
-  -o                           output file path which expected [ default "current dir" ].
-  -fname                       file name which expected .
-  -si --simplify               simplify available info [ default "True" ].
-  --debug                      open debug mode .
-  --more                       show more .
-  -h --help                    show this screen .
-  -v --version                 show version.
-Supported Formats:
-   %(formats_lst)s
-    """ % dict(formats_lst=formats_lst)
-
-    @rt_logger
-    def export_to_file():
-        arguments = docopt(cli_doc, version=weibo_scraper_with_version)
-        name = arguments.get("<name>")
-        pages = int(arguments.get("<pages>")) if arguments.get("<pages>") is not None else None
-        format = arguments.get("<format>") or "txt"
-        is_simplify = arguments.get("--si") or False
-        exported_file_path = arguments.get("<exported_file_path>") or os.getcwd()
-        exported_file_name = arguments.get("<exported_file_name>")
-        is_debug = arguments.get("--debug") or False
-        more = arguments.get("--more")
-
-        if more:
-            more_description = weibo_scraper_with_version
-            here = os.path.abspath(os.path.dirname(__file__))
-            with io.open(os.path.join(here, "README.md"), encoding="UTF-8") as f:
-                more_description += "\n" + f.read()
-            print(more_description)
-            pass
-        else:
-            tweets_persistence.dispatch(name=name,
-                                        pages=pages,
-                                        is_simplify=is_simplify,
-                                        persistence_format=format,
-                                        export_file_path=exported_file_path,
-                                        export_file_name=exported_file_name,
-                                        is_debug=is_debug, )
-
-    export_to_file()
-
-
-if __name__ == '__main__':
-    cli()
