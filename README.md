@@ -58,12 +58,40 @@ $ pipenv update weibo-scraper # just update weibo-scraper
 ```
 
 
-
-
 Only Python 3.6+ is supported
 
 ----
 # Usage
+
+### CLI
+
+```bash
+
+$ weibo-scraper -h
+
+usage: weibo-scraper [-h] [-u U] [-p P] [-o O] [-f FORMAT]
+                     [-efn EXPORTED_FILE_NAME] [-s] [-d] [--more] [-v]
+
+weibo-scraper-1.0.7-beta 🚀
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -u U                  username [nickname] which want to exported
+  -p P                  pages which exported [ default 1 page ]
+  -o O                  output file path which expected [ default 'current
+                        dir' ]
+  -f FORMAT, --format FORMAT
+                        format which expected [ default 'txt' ]
+  -efn EXPORTED_FILE_NAME, --exported_file_name EXPORTED_FILE_NAME
+                        file name which expected
+  -s, --simplify        simplify available info
+  -d, --debug           open debug mode
+  --more                more
+  -v, --version         weibo scraper version
+
+```
+
+### API
 
 1. Firstly , you can get weibo profile by `name` or `uid` .
 

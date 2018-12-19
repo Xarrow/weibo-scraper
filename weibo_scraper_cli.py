@@ -23,7 +23,7 @@ from samples import tweets_persistence
 def cli():
     """weibo-cli"""
     weibo_scraper_name = "weibo-scraper"
-    weibo_scraper_version = "1.0.6 🚀"
+    weibo_scraper_version = "1.0.7 beta 🚀"
     weibo_scraper_description = weibo_scraper_name + "-" + weibo_scraper_version
     parser = argparse.ArgumentParser(description=weibo_scraper_description,
                                      prog=weibo_scraper_name,
@@ -54,10 +54,11 @@ def cli():
 
     if args.more:
         more_description = weibo_scraper_description
-        here = os.path.abspath(os.path.dirname(__file__))
-        with io.open(os.path.join(here, "README.md"), encoding="UTF-8") as f:
-            more_description += "\n" + f.read()
-        print(more_description)
+        more_description += " you can visit https://xarrow.github.io/weibo-scraper  in detail"
+        # here = os.path.abspath(os.path.dirname(__file__))
+        # with io.open(os.path.join(here, "README.md"), encoding="UTF-8") as f:
+        #     more_description += "\n" + f.read()
+        # print(more_description)
         return
 
     if args.u is None:
