@@ -15,7 +15,7 @@ import os
 import pickle
 
 from weibo_scraper import get_formatted_weibo_tweets_by_name
-from weibo_base import rt_logger
+from weibo_base import rt_logger,logger,is_debug
 
 
 DEFAULT_EXPORT_FILENAME = "export_%s" % int(time.time())
@@ -109,7 +109,7 @@ class TweetsPersistence(object):
 
     def persistence(self, *args, **kwargs):
         # TODO function to AOP
-        if logging.getLogger().level == logging.DEBUG:
+        if is_debug:
             self.execute_with_de(*args, **kwargs)
         else:
             self.action.execute(*args, **kwargs)
@@ -255,7 +255,7 @@ class JSONPersistenceImpl(WeiboTweetsAction):
 def dispatch(name: str, pages: int = None, is_simplify: bool = True, persistence_format: str = "txt",
              export_file_path: str = None, export_file_name: str = None, is_debug: bool = False):
     if not is_debug:
-        logging.getLogger().setLevel(logging.ERROR)
+        logger.getLogger().setLevel(logging.DEBUG)
     if persistence_format == 'txt':
         pst = TxtPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify, export_file_path=export_file_path,
                                  export_file_name=export_file_name)
