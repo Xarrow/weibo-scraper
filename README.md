@@ -149,6 +149,11 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 3. Welcome To Fork Me .
 
 ----
+
+# Open Source
+
+1. [JetBrains](https://www.jetbrains.com/?from=https://github.com/Xarrow/weibo-scraper) Open Source License 
+
 # LICENSE
 
 MIT
