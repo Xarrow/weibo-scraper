@@ -395,6 +395,15 @@ Supported Formats:
 
     export_to_file()
 
+def cli_prompt():
+    from prompt_toolkit import prompt,print_formatted_text,HTML
+    from prompt_toolkit.completion import WordCompleter
+    html_completer = WordCompleter(['-u','-p'])
+    text = prompt('',completer=html_completer)
+    print_formatted_text(text)
+
+
+
 
 if __name__ == '__main__':
-    cli()
+    cli_prompt()
