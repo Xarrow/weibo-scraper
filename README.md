@@ -180,3 +180,5 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 # LICENSE
 
 MIT
+
+Powered by Jetbrains OpenSource License
