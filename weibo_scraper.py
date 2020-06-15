@@ -26,7 +26,7 @@ try:
     assert sys.version_info.major == 3
     assert sys.version_info.minor >= 6
 except AssertionError:
-    raise RuntimeError('weibo-scrapy requires Python3.6+ !')
+    raise RuntimeError('weibo-scraper requires Python3.6+ !')
 
 now = datetime.datetime.now()
 CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')

@@ -120,8 +120,8 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_txt_export(self):
         from samples.tweets_persistence import tweets_persistence
-        tweets_persistence.dispatch(name='嘻红豆', pages=1, is_simplify=True, persistence_format="txt",
-                                    export_file_name="梁群茹2txt", is_debug=True)
+        tweets_persistence.dispatch(name='不是旅客是归人', pages=None, is_simplify=True, persistence_format="txt",
+                                    export_file_name="不是旅客是归人", is_debug=True)
 
     def test_weibo_tweets_with_comments(self):
         """weibo comments"""
