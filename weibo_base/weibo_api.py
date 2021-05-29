@@ -173,7 +173,7 @@ class WeiboV2(object):
         headers = HEADER
         r_login = self.request.post(url=login_url, data=data, headers=headers)
         if not r_login.text.__contains__('20000000'):
-            raise Exception("login_for_sso failed !")
+            raise Exception("login_for_sso failed !",r_login.text)
 
         self.cookies = r_login.cookies.get_dict()
 
@@ -277,3 +277,6 @@ class WeiboV2(object):
             "_t": 0
         }
         return self.request.post(url=api, data=data, cookies=self.cookies, headers=PC_HEADER).text
+
+wv = WeiboV2("18757583204","Yuious123")
+wv.login_for_sso()
