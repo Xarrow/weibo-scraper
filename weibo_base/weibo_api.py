@@ -115,6 +115,15 @@ def weibo_comments(id: str, mid: str) -> Response:
     return None
 
 
+def realtime_hotword():
+    _params = {"containerid": "106003type%3D25%26t%3D3%26disable_hot%3D1%26filter_type%3Drealtimehot"}
+    _response = requests.get(url=_GET_INDEX, params=_params)
+
+    if _response.status_code == 200 and _response.json().get("ok") == 1:
+        return _response.json()
+    return None
+
+
 # ----------------------------------- 前方高能 ---------------------------
 HEADER = {
     "Connection": "keep-alive",
@@ -172,10 +181,21 @@ class WeiboV2(object):
         }
         headers = HEADER
         r_login = self.request.post(url=login_url, data=data, headers=headers)
+
         if not r_login.text.__contains__('20000000'):
-            raise Exception("login_for_sso failed !",r_login.text)
+            if r_login.json().get('retcode') == 50050011:
+                errurl = r_login.json().get('data').get('errurl')
+                self.phone_verify(errurl)
+            else:
+                raise Exception("login_for_sso failed !", r_login.text)
 
         self.cookies = r_login.cookies.get_dict()
+
+    def phone_verify(self, errurl):
+        print(errurl)
+        req = self.request.get(errurl)
+        print(req.text)
+        pass
 
     def get_uid(self):
         """get uid"""
@@ -278,5 +298,21 @@ class WeiboV2(object):
         }
         return self.request.post(url=api, data=data, cookies=self.cookies, headers=PC_HEADER).text
 
-wv = WeiboV2("18757583204","Yuious123")
-wv.login_for_sso()
+
+wv = WeiboV2("13515105572", "Weious136")
+
+# wv.login_for_sso()
+from weibo_util import Timer, TimerManager, rt_logger
+
+
+@rt_logger
+def hw():
+    for item in realtime_hotword().get('data').get('cards')[0].get('card_group'):
+        if item.get('promotion'):
+            continue
+        print(item.get('desc'), 0 if item.get('desc_extr') is None else item.get('desc_extr'), item.get('scheme'))
+
+
+wt = Timer(name="realtime_hotword_timer", fn=hw, interval=1)
+wt.set_ignore_ex(True)
+wt.scheduler()
