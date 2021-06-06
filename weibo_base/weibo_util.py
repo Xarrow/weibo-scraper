@@ -2,7 +2,7 @@
 
 """
  Author: Helixcs
- Site: https://iliangqunru.bitcron.com/
+ Site: https://github.com/Xarrow/weibo-scraper
  File: weibo_util.py
  Time: 5/19/18
  Descripton:  weibo_util is in common use

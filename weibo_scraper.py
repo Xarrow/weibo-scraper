@@ -2,7 +2,7 @@
 
 """
  Author: helixcs
- Site: https://iliangqunru.bitcron.com/
+ Site: https://github.com/Xarrow/weibo-scraper
  File: weibo_scraper.py
  Time: 3/16/18
 """
@@ -329,6 +329,9 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_item
 
 
 def get_realtime_hotwords() -> List[RealTimeHotWordResponse]:
+    """
+    get real time hot words
+    """
     hot_words = realtime_hotword()
     if None is hot_words:
         return []
@@ -347,11 +350,6 @@ def get_realtime_hotwords() -> List[RealTimeHotWordResponse]:
         index += 1
 
     return response
-
-
-if __name__ == '__main__':
-    for i in get_realtime_hotwords():
-        print(str(i))
 
 
 # -------------------- simplify method name ----------------

@@ -4,7 +4,7 @@
  Verion: 1.0
  Since : 3.6
  Author: zhangjian
- Site: https://iliangqunru.bitcron.com/
+ Site: https://github.com/Xarrow/weibo-scraper
  File: cli
  Time: 2018/12/18
  
@@ -13,15 +13,9 @@
 
 import argparse
 import os
-import io
-from prompt_toolkit import print_formatted_text, HTML, PromptSession
-from prompt_toolkit.formatted_text import FormattedText
 
 from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter, DynamicCompleter
-
-
-from weibo_base import rt_logger
+from prompt_toolkit.completion import WordCompleter
 
 
 def cli():
@@ -72,13 +66,13 @@ def cli():
     export_file_name = args.exported_file_name
     is_debug = args.debug
 
-    tweets_persistence.dispatch(name=name,
-                                pages=pages,
-                                is_simplify=is_simplify,
-                                persistence_format=persistence_format,
-                                export_file_path=export_file_path,
-                                export_file_name=export_file_name,
-                                is_debug=is_debug)
+    persistence.dispatch(name=name,
+                         pages=pages,
+                         is_simplify=is_simplify,
+                         persistence_format=persistence_format,
+                         export_file_path=export_file_path,
+                         export_file_name=export_file_name,
+                         is_debug=is_debug)
 
 
 ws = ['<html>', '<body>', '<head>', '<title>', 'google', '-u']
@@ -106,4 +100,4 @@ if __name__ == '__main__':
     html_completer = CompleterProxy(ws)
     text = prompt('weibo-scraper: ', completer=html_completer, bottom_toolbar=html_completer.bottom_toolbar)
     print("weibo-scraper ", text)
-    from samples import tweets_persistence
+    import persistence

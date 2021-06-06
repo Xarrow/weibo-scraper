@@ -3,13 +3,13 @@
 """
  Verion: 1.0
  Author: Helixcs
- Site: https://iliangqunru.bitcron.com/
+ Site: https://github.com/Xarrow/weibo-scraper
  File: weibo_typing.py
  Time: 11/25/18
 """
 
-from typing import Optional
+from typing import Optional, Dict
 
-_JSONResponse = Optional[dict]
+_JSONResponse = Optional[Dict]
 _StrFieldResponse = Optional[str]
 _IntFieldResponse = Optional[int]

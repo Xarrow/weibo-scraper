@@ -2,7 +2,7 @@
 
 """
  Author: Helixcs
- Site: https://iliangqunru.bitcron.com/
+ Site: https://github.com/Xarrow/weibo-scraper
  File: flasgger_api.py
  Time: 5/24/18
 """

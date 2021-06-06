@@ -3,7 +3,7 @@
 """
  Verion: 1.0
  Author: Helixcs
- Site: https://iliangqunru.bitcron.com/
+ Site: https://github.com/Xarrow/weibo-scraper
  File: weibo_parser.py
  Time: 11/25/18
 """

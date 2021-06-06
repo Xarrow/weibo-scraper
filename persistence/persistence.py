@@ -3,8 +3,8 @@
 """
  Verion: 1.0
  Author: Helixcs
- Site: https://iliangqunru.bitcron.com/
- File: tweets_persistence.py
+ Site: https://github.com/Xarrow/weibo-scraper
+ File: persistence.py
  Time: 6/9/18
  Reference : https://www.toptal.com/python/python-design-patterns
 """
