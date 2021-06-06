@@ -21,7 +21,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter, DynamicCompleter
 
 
-# from weibo_base import rt_logger
+from weibo_base import rt_logger
 
 
 def cli():
