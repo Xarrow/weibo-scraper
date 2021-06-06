@@ -50,4 +50,3 @@ def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
 
     weibo_get_index_parser = WeiboGetIndexParser(get_index_api_response=weibo_get_index_response)
     return weibo_get_index_parser.tweet_containerid
-#

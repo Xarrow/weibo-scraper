@@ -8,12 +8,17 @@
 """
 import datetime
 import sys
-from typing import Iterator, Optional
+from typing import Iterator, Optional, List, Dict
 
-from weibo_base.weibo_api import weibo_tweets, weibo_getIndex, weibo_second, weibo_comments
+from weibo_base.weibo_api import weibo_tweets, weibo_getIndex, weibo_second, weibo_comments, realtime_hotword
 from weibo_base.weibo_component import exist_get_uid, get_tweet_containerid
-from weibo_base.weibo_parser import WeiboCommentParser, WeiboGetIndexParser, UserMeta, WeiboTweetParser, \
+from weibo_base.weibo_parser import \
+    WeiboCommentParser, \
+    WeiboGetIndexParser, \
+    UserMeta, \
+    WeiboTweetParser, \
     FollowAndFollowerParser
+from weibo_base.weibo_human_response import RealTimeHotWordResponse
 from weibo_base.weibo_util import logger
 
 try:
@@ -27,7 +32,7 @@ CURRENT_TIME = now.strftime('%Y-%m-%d %H:%M:%S')
 CURRENT_YEAR = now.strftime('%Y')
 CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
 
-_TweetsResponse = Optional[Iterator[dict]]
+_TweetsResponse = Optional[Iterator[Dict]]
 _UserMetaResponse = Optional[UserMeta]
 _WeiboGetIndexResponse = Optional[WeiboGetIndexParser]
 
@@ -56,7 +61,7 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
         inner_tweet_containerid = get_tweet_containerid(uid=uid)
         yield from get_weibo_tweets(tweet_container_id=inner_tweet_containerid, pages=pages)
     else:
-        yield None
+        yield []
 
 
 def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
@@ -118,7 +123,7 @@ def get_formatted_weibo_tweets_by_name(name: str, with_comments: bool = False, p
     :return:  _TweetsResponse
     """
     if name == '':
-        raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
+        raise WeiBoScraperException("name from <<get_weibo_tweets_by_name>> can not be blank!")
     egu_res = exist_get_uid(name=name)
     exist = egu_res.get("exist")
     uid = egu_res.get("uid")
@@ -130,7 +135,8 @@ def get_formatted_weibo_tweets_by_name(name: str, with_comments: bool = False, p
         yield None
 
 
-def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pages: int = None,max_item_limit:int =None) -> _TweetsResponse:
+def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pages: int = None,
+                               max_item_limit: int = None) -> _TweetsResponse:
     """
     Get weibo formatted tweets by container id
 
@@ -268,7 +274,7 @@ def get_follows_and_followers(name: str = None, uid: str = None, pages: int = No
 
     weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid)
     if weibo_get_index_parser_response is None:
-        yield None
+        yield []
     else:
         yield from gen_follows_and_followers()
 
@@ -320,6 +326,32 @@ def get_followers(name: str = None, uid: str = None, pages: int = None, max_item
                     return
                 yield user
                 current_total_pages += 1
+
+
+def get_realtime_hotwords() -> List[RealTimeHotWordResponse]:
+    hot_words = realtime_hotword()
+    if None is hot_words:
+        return []
+
+    index = 1
+    response = []
+    for item in hot_words.get('data').get('cards')[0].get('card_group'):
+        if item.get('promotion'):
+            continue
+        rthr = RealTimeHotWordResponse()
+        rthr.sequence = index
+        rthr.desc = item.get('desc')
+        rthr.hot = 0 if item.get('desc_extr') is None else item.get('desc_extr')
+        rthr.url = item.get('scheme')
+        response.append(rthr)
+        index += 1
+
+    return response
+
+
+if __name__ == '__main__':
+    for i in get_realtime_hotwords():
+        print(str(i))
 
 
 # -------------------- simplify method name ----------------

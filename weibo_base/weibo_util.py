@@ -8,7 +8,8 @@
  Descripton:  weibo_util is in common use
 """
 import logging
-
+import threading
+import requests
 from contextlib import contextmanager
 from time import time
 
@@ -27,10 +28,47 @@ def rt_logger(func):
         __start_time = int(time() * 1000)
         __response = func(*args, **kwargs)
         __end_time = int(time() * 1000)
-        print("==> [rt_logger] func: [ %s ], execute spend: [ %s ms ] ." % (func.__name__, (__end_time - __start_time)))
+        print("[ws] [rt_logger] func: [ %s ], args:[ %s ] execute spend: [ %s ms ] ." % (
+            func.__name__, (args, kwargs), (__end_time - __start_time)))
         return __response
 
     return func_wrapper
+
+
+def api_ex_handle(func):
+    pass
+
+
+class RequestProxy(object):
+    def __init__(self):
+        super().__init__()
+
+    def session(self):
+        return requests.Session()
+
+    def requests_proxy(self, method, url, **kwargs):
+        """
+        request proxy
+        """
+        print("before request")
+        proxies = {
+            'http': 'socks5://127.0.0.1:1086',
+            'https': 'socks5://127.0.0.1:1086',
+        }
+        # kwargs.setdefault("proxies", proxies)
+        response = requests.request(method, url, **kwargs)
+        print("after request")
+        return response
+
+    def get(self, url, params=None, **kwargs):
+        """
+        @see requests.sessions.Session
+        """
+        kwargs.setdefault('allow_redirects', True)
+        return self.requests_proxy('GET', url, params=params, **kwargs)
+
+    def post(self, url, data=None, json=None, **kwargs):
+        return self.requests_proxy('post', url, data=data, json=json, **kwargs)
 
 
 @contextmanager
@@ -39,9 +77,6 @@ def open_file(file_name: str):
     yield file
     file.flush()
     file.close()
-
-
-import threading
 
 
 class Timer(object):
@@ -55,7 +90,6 @@ class Timer(object):
                  *args,
                  **kwargs):
         """
-        NacosTimer
         :param name:  timer name
         :param fn:    function which scheduler
         :param interval:  scheduler interval, default 7s

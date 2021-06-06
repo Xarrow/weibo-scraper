@@ -23,6 +23,15 @@ CURRENT_YEAR_WITH_DATE = now.strftime('%Y-%m-%d')
 
 
 # ========== User Metadata ===============
+class BaseParser(object):
+    def __init__(self, raw_response: dict):
+        self._get_time = CURRENT_TIME
+        self._raw_response = raw_response
+
+    @property
+    def raw_response(self) -> _JSONResponse:
+        return self._raw_response
+
 
 class UserMeta(object):
     """weibo user meta data """
@@ -175,7 +184,7 @@ class WeiboCommentParser(object):
         return self._comment_node
 
     @raw_comment_node.setter
-    def raw_commet_node(self, value: _JSONResponse):
+    def raw_comment_node(self, value: _JSONResponse):
         self._comment_node = value
 
     @property
@@ -573,3 +582,8 @@ class FollowAndFollowerParser(object):
 
     def __repr__(self):
         return "<FollowAndFollowerParser container={} >".format(repr(self.containerid))
+
+
+class RealTimeHotWords(BaseParser):
+    def __init__(self, realtime_hotwords_response: dict):
+        super(RealTimeHotWords, self).__init__(realtime_hotwords_response)

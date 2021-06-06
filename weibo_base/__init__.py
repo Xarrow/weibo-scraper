@@ -11,4 +11,4 @@ from .weibo_api import *
 from .weibo_component import *
 from .weibo_util import *
 from .weibo_parser import *
-
+from .weibo_human_response import *

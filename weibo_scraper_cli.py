@@ -12,18 +12,22 @@
 """
 
 import argparse
-
 import os
 import io
+from prompt_toolkit import print_formatted_text, HTML, PromptSession
+from prompt_toolkit.formatted_text import FormattedText
 
-from weibo_base import rt_logger
-from samples import tweets_persistence
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter, DynamicCompleter
+
+
+# from weibo_base import rt_logger
 
 
 def cli():
     """weibo-cli"""
     weibo_scraper_name = "weibo-scraper"
-    weibo_scraper_version = "1.0.7 beta 🚀"
+    weibo_scraper_version = "1.0.7 beta"
     weibo_scraper_description = weibo_scraper_name + "-" + weibo_scraper_version
     parser = argparse.ArgumentParser(description=weibo_scraper_description,
                                      prog=weibo_scraper_name,
@@ -36,7 +40,6 @@ def cli():
                         help="output file path which expected [ default 'current dir' ]")
     parser.add_argument("-f", "--format", type=str, required=False, default="txt",
                         help="format which expected [ default 'txt' ]")
-
     parser.add_argument("-efn", "--exported_file_name", required=False, default=None, help="file name which expected")
     parser.add_argument("-s", "--simplify", action="store_true", help="simplify available info")
     parser.add_argument("-d", "--debug", action="store_true", help="open debug mode")
@@ -55,10 +58,6 @@ def cli():
     if args.more:
         more_description = weibo_scraper_description
         more_description += " you can visit https://xarrow.github.io/weibo-scraper  in detail"
-        # here = os.path.abspath(os.path.dirname(__file__))
-        # with io.open(os.path.join(here, "README.md"), encoding="UTF-8") as f:
-        #     more_description += "\n" + f.read()
-        # print(more_description)
         return
 
     if args.u is None:
@@ -73,18 +72,38 @@ def cli():
     export_file_name = args.exported_file_name
     is_debug = args.debug
 
-    @rt_logger
-    def export_to_file():
-        tweets_persistence.dispatch(name=name,
-                                    pages=pages,
-                                    is_simplify=is_simplify,
-                                    persistence_format=persistence_format,
-                                    export_file_path=export_file_path,
-                                    export_file_name=export_file_name,
-                                    is_debug=is_debug)
+    tweets_persistence.dispatch(name=name,
+                                pages=pages,
+                                is_simplify=is_simplify,
+                                persistence_format=persistence_format,
+                                export_file_path=export_file_path,
+                                export_file_name=export_file_name,
+                                is_debug=is_debug)
 
-    export_to_file()
+
+ws = ['<html>', '<body>', '<head>', '<title>', 'google', '-u']
+
+
+class CompleterProxy(WordCompleter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_input = ""
+
+    def get_completions(
+            self, document, complete_event):
+        self.user_input = document.text
+        if self.user_input in ws:
+            ws.remove(self.user_input)
+        return super().get_completions(document=document, complete_event=complete_event)
+
+    def bottom_toolbar(self):
+        if self.user_input == '-u':
+            return "Help: 微博名称"
+        return "Help: " + self.user_input
 
 
 if __name__ == '__main__':
-    cli()
+    html_completer = CompleterProxy(ws)
+    text = prompt('weibo-scraper: ', completer=html_completer, bottom_toolbar=html_completer.bottom_toolbar)
+    print("weibo-scraper ", text)
+    from samples import tweets_persistence

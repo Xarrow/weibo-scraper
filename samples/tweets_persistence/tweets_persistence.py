@@ -254,8 +254,8 @@ class JSONPersistenceImpl(WeiboTweetsAction):
 
 def dispatch(name: str, pages: int = None, is_simplify: bool = True, persistence_format: str = "txt",
              export_file_path: str = None, export_file_name: str = None, is_debug: bool = False):
-    if not is_debug:
-        logger.getLogger().setLevel(logging.DEBUG)
+    # if not is_debug:
+    #     logger.getLogger().setLevel(logging.DEBUG)
     if persistence_format == 'txt':
         pst = TxtPersistenceImpl(name=name, pages=pages, is_simplify=is_simplify, export_file_path=export_file_path,
                                  export_file_name=export_file_name)
