@@ -3,7 +3,7 @@ docopt==0.6.2
 atomicwrites==1.2.1; python_version != '3.3.*'
 attrs==18.2.0
 beautifulsoup4==4.6.3
-bleach==3.0.2
+bleach==3.3.0
 bs4==0.0.1
 certifi==2018.10.15
 chardet==3.0.4
