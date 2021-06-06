@@ -45,7 +45,7 @@ class UploadCommand(Command):
 
 
 setup(
-    version="1.0.7-beta",
+    version="1.0.7rc1.dev1",
     long_description=long_description,
     long_description_content_type="text/markdown",
     name="weibo-scraper",
@@ -65,7 +65,7 @@ setup(
     install_requires=['requests'],
     keywords="weibo scraper crawl",
     # If your package is a single module, use this instead of 'packages':
-    py_modules=['weibo_scraper','weibo_scraper_cli'],
+    py_modules=['weibo_scraper', 'weibo_scraper_cli'],
     # If your package has custom module ,
     # Full list :https://docs.python.org/3.6/distutils/setupscript.html
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
@@ -76,7 +76,7 @@ setup(
     },
     # packing to command tool interface
     entry_points={
-        'console_scripts':['weibo-scraper=weibo_scraper_cli:cli']
+        'console_scripts': ['weibo-scraper=weibo_scraper_cli:cli']
     }
 
 )

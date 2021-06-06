@@ -584,6 +584,47 @@ class FollowAndFollowerParser(object):
         return "<FollowAndFollowerParser container={} >".format(repr(self.containerid))
 
 
-class RealTimeHotWords(BaseParser):
-    def __init__(self, realtime_hotwords_response: dict):
-        super(RealTimeHotWords, self).__init__(realtime_hotwords_response)
+class RealTimeHotWordResponse(object):
+    __slots__ = ['_sequence', '_desc', '_hot', '_url']
+
+    def __init__(self, ):
+        self._sequence = 0
+        self._desc = ""
+        self._hot = 0
+        self._url = ""
+
+    @property
+    def sequence(self):
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, sequence):
+        self._sequence = sequence
+
+    @property
+    def desc(self):
+        return self._desc
+
+    @desc.setter
+    def desc(self, desc):
+        self._desc = desc
+
+    @property
+    def hot(self):
+        return self._hot
+
+    @hot.setter
+    def hot(self, hot):
+        self._hot = hot
+
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, url):
+        self._url = url
+
+    def __repr__(self):
+        return "<RealTimeHotWordResponse sequence=%r,desc=%r,hot=%r,url=%r,>" % (
+            self._sequence, self._desc, self._hot, self._url,)

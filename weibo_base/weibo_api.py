@@ -7,7 +7,7 @@
  Time: 5/19/18
 """
 from typing import Optional
-from weibo_base.weibo_util import RequestProxy
+from weibo_base.weibo_util import RequestProxy, WeiboApiException
 
 requests = RequestProxy()
 Response = Optional[dict]
@@ -15,11 +15,6 @@ Response = Optional[dict]
 _GET_INDEX = "https://m.weibo.cn/api/container/getIndex"
 _GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 _COMMENTS_HOTFLOW = "https://m.weibo.cn/comments/hotflow"
-
-
-class WeiboApiException(Exception):
-    def __init__(self, message):
-        self.message = message
 
 
 def search_by_name(name: str) -> Response:
@@ -70,7 +65,8 @@ def weibo_tweets(containerid: str, page: int) -> Response:
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
     raise WeiboApiException(
-        "weibo_tweets request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params, _response))
+        "weibo_tweets request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params,
+                                                                              _response if _response is None else _response.text))
 
 
 def weibo_containerid(containerid: str, page: int) -> Response:

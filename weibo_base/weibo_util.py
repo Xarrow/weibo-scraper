@@ -9,18 +9,31 @@
 """
 import logging
 import threading
+import sys
 import requests
 from contextlib import contextmanager
 from time import time
 
-level = logging.DEBUG
-format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-datefmt = '%Y-%m-%d %H:%M'
-logging.basicConfig(level=level, format=format, datefmt=datefmt)
+level = logging.INFO
+ws_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+ws_datefmt = '%Y-%m-%d %H:%M'
+logging.basicConfig(level=level, format=ws_format, datefmt=ws_datefmt)
 logger = logging.getLogger(__name__)
 logger.setLevel(level)
 
-is_debug = logger.level == logging.DEBUG
+
+class WeiboApiException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+class WeiboScraperException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+def set_debug():
+    logger.setLevel(logging.DEBUG)
 
 
 def rt_logger(func):
@@ -28,14 +41,81 @@ def rt_logger(func):
         __start_time = int(time() * 1000)
         __response = func(*args, **kwargs)
         __end_time = int(time() * 1000)
-        print("[ws] [rt_logger] func: [ %s ], args:[ %s ] execute spend: [ %s ms ] ." % (
-            func.__name__, (args, kwargs), (__end_time - __start_time)))
+        if is_debug:
+            logger.debug("[ws] [rt_logger] func: [ %s ], args:[ %s ] execute spend: [ %s ms ] ." % (
+                func.__name__, (args, kwargs), (__end_time - __start_time)))
         return __response
 
     return func_wrapper
 
 
 def api_ex_handle(func):
+    pass
+
+
+def ws_handle(func):
+    def func_wrapper(*args, **kwargs):
+        is_debug = logger.level == logging.DEBUG
+        start_time = int(time() * 1000)
+        response = None
+        try:
+            response = func(*args, **kwargs)
+            return response
+        except WeiboApiException as ex:
+            pass
+        except Exception as ex:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            _ext = []
+            _ = set()
+            handle_exec_tb(exc_tb, _ext, _)
+            logger.error("[exception] function:[{0}] exception , params:{1}, response:{2} ,ex:{4}, stack:{3}".format(
+                func.__name__,
+                (args, kwargs),
+                ex,
+                response,
+                _ext))
+            raise ex
+        finally:
+            if is_debug:
+                logger.debug(
+                    "[invoke process] function:[{0}] , params:{1}, response:{2} ".format(
+                        func.__name__,
+                        (args, kwargs),
+                        response))
+
+                end_time = int(time() * 1000)
+                logger.debug("[cost time] function:[%s], args:[%s] execute spend:[%s ms]" % (
+                    func.__name__,
+                    (args, kwargs),
+                    (end_time - start_time)))
+
+    return func_wrapper
+
+
+def handle_exec_tb(tb_exec, _ext: list, cls_methods_tag_set: set):
+    if not hasattr(tb_exec, "tb_frame"):
+        return
+    _fileName = _cls_methods_tag = tb_exec.tb_frame.f_code.co_filename
+    _parameters = {}
+    for k, v in tb_exec.tb_frame.f_locals.items():
+        if isinstance(v, object):
+            if k == 'func':
+                v = v.__name__
+                _cls_methods_tag += "_" + v
+                if _cls_methods_tag in cls_methods_tag_set:
+                    return
+                cls_methods_tag_set.add(_cls_methods_tag)
+            else:
+                v = str(v)
+        _parameters[k] = v
+    _ret = {"fname": _fileName,
+            "lineno": tb_exec.tb_lineno,
+            "parameters": _parameters}
+    _ext.append(_ret)
+    handle_exec_tb(tb_exec.tb_next, _ext, cls_methods_tag_set)
+
+
+class AntiStrategy(object):
     pass
 
 

@@ -97,7 +97,8 @@ class CompleterProxy(WordCompleter):
 
 
 if __name__ == '__main__':
-    html_completer = CompleterProxy(ws)
-    text = prompt('weibo-scraper: ', completer=html_completer, bottom_toolbar=html_completer.bottom_toolbar)
-    print("weibo-scraper ", text)
-    import persistence
+    # html_completer = CompleterProxy(ws)
+    # text = prompt('weibo-scraper: ', completer=html_completer, bottom_toolbar=html_completer.bottom_toolbar)
+    # print("weibo-scraper ", text)
+    # import persistence
+    cli()

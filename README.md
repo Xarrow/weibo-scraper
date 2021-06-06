@@ -28,7 +28,7 @@ In general , we can inspect mobile site which has it's own API by Chrome.
 
 ```shell
 
-$ pip install weibo-scraper==1.0.7b0
+$ pip install weibo-scraper==1.0.7rc1.dev1
 
 ```
 
