@@ -50,14 +50,14 @@ class RequestProxy(object):
         """
         request proxy
         """
-        print("before request")
+        # print("before request")
         proxies = {
             'http': 'socks5://127.0.0.1:1086',
             'https': 'socks5://127.0.0.1:1086',
         }
         # kwargs.setdefault("proxies", proxies)
         response = requests.request(method, url, **kwargs)
-        print("after request")
+        # print("after request")
         return response
 
     def get(self, url, params=None, **kwargs):

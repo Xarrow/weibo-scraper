@@ -37,7 +37,7 @@ _UserMetaResponse = Optional[UserMeta]
 _WeiboGetIndexResponse = Optional[WeiboGetIndexParser]
 
 
-class WeiBoScraperException(Exception):
+class WeiboScraperException(Exception):
     def __init__(self, message):
         self.message = message
 
@@ -53,15 +53,15 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     :return: _TweetsResponse
     """
     if name == '':
-        raise WeiBoScraperException("name from <get_weibo_tweets_by_name> can not be blank!")
-    egu_res = exist_get_uid(name=name)
-    exist = egu_res.get("exist")
-    uid = egu_res.get("uid")
+        raise WeiboScraperException("`name` can not be blank!")
+    res = exist_get_uid(name=name)
+    exist = res.get("exist")
+    uid = res.get("uid")
     if exist:
-        inner_tweet_containerid = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets(tweet_container_id=inner_tweet_containerid, pages=pages)
+        inner_tweet_container_id = get_tweet_containerid(uid=uid)
+        yield from get_weibo_tweets(tweet_container_id=inner_tweet_container_id, pages=pages)
     else:
-        yield []
+        raise WeiboScraperException("`{name}` can not find!".format(name=name))
 
 
 def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
@@ -110,7 +110,9 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
     yield from gen()
 
 
-def get_formatted_weibo_tweets_by_name(name: str, with_comments: bool = False, pages: int = None) -> _TweetsResponse:
+def get_formatted_weibo_tweets_by_name(name: str,
+                                       with_comments: bool = False,
+                                       pages: int = None) -> _TweetsResponse:
     """
     Get formatted weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
@@ -119,20 +121,22 @@ def get_formatted_weibo_tweets_by_name(name: str, with_comments: bool = False, p
     >>>     for tweetMeta in user_meta.cards_node:
     >>>         print(tweetMeta.mblog.text)
     :param name: nick name which you want to search
+    :param with_comments , with comments
     :param pages: pages ,default all pages
     :return:  _TweetsResponse
     """
     if name == '':
-        raise WeiBoScraperException("name from <<get_weibo_tweets_by_name>> can not be blank!")
+        raise WeiboScraperException("name  can not be blank!")
     egu_res = exist_get_uid(name=name)
     exist = egu_res.get("exist")
     uid = egu_res.get("uid")
     if exist:
         inner_tweet_containerid = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid, with_comments=with_comments,
+        yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid,
+                                              with_comments=with_comments,
                                               pages=pages)
     else:
-        yield None
+        raise WeiboScraperException("`{name}` can not find!".format(name=name))
 
 
 def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pages: int = None,

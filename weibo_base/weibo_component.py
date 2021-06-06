@@ -8,11 +8,12 @@
  Time: 11/25/18
 """
 # =========== api component ==============
+from typing import Dict
 from weibo_base.weibo_api import search_by_name
 from weibo_base.weibo_parser import weibo_getIndex, WeiboGetIndexParser
 
 
-def exist_get_uid(search_by_name_response: str = None, name: str = "") -> dict:
+def exist_get_uid(search_by_name_response: str = None, name: str = "") -> Dict:
     """
     whether name is exist in response which from search api, if exist ,return uid
     :param search_by_name_response:

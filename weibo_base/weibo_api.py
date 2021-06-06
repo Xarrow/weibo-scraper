@@ -9,7 +9,6 @@
 from typing import Optional
 from weibo_base.weibo_util import RequestProxy
 
-# import requests
 requests = RequestProxy()
 Response = Optional[dict]
 
@@ -68,9 +67,10 @@ def weibo_tweets(containerid: str, page: int) -> Response:
     """
     _params = {"containerid": containerid, "page": page}
     _response = requests.get(url=_GET_INDEX, params=_params)
-    if _response.status_code == 200:
+    if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
-    return None
+    raise WeiboApiException(
+        "weibo_tweets request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params, _response))
 
 
 def weibo_containerid(containerid: str, page: int) -> Response:
@@ -82,9 +82,10 @@ def weibo_containerid(containerid: str, page: int) -> Response:
     """
     _params = {"containerid": containerid, "page": page}
     _response = requests.get(url=_GET_INDEX, params=_params)
-    if _response.status_code == 200:
+    if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
-    return None
+    raise WeiboApiException(
+        "weibo_containerid request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params, _response))
 
 
 def weibo_second(containerid: str, page: int) -> Response:
@@ -96,9 +97,10 @@ def weibo_second(containerid: str, page: int) -> Response:
     """
     _params = {"containerid": containerid, "page": page}
     _response = requests.get(url=_GET_SECOND, params=_params)
-    if _response.status_code == 200:
+    if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
-    return None
+    raise WeiboApiException(
+        "weibo_second request failed, url={0},params={1},response={2}".format(_GET_SECOND, _params, _response))
 
 
 def weibo_comments(id: str, mid: str) -> Response:
@@ -111,9 +113,10 @@ def weibo_comments(id: str, mid: str) -> Response:
     """
     _params = {"id": id, "mid": mid}
     _response = requests.get(url=_COMMENTS_HOTFLOW, params=_params)
-    if _response.status_code == 200:
+    if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
-    return None
+    raise WeiboApiException(
+        "weibo_comments request failed, url={0},params={1},response={2}".format(_COMMENTS_HOTFLOW, _params, _response))
 
 
 def realtime_hotword():
@@ -122,7 +125,8 @@ def realtime_hotword():
 
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
-    return WeiboApiException("")
+    raise WeiboApiException(
+        "weibo_comments request failed, url={0},params={1},response={2}".format(_COMMENTS_HOTFLOW, _params, _response))
 
 
 # ----------------------------------- 前方高能 ---------------------------
@@ -300,7 +304,6 @@ class WeiboV2(object):
             "_t": 0
         }
         return self.request.post(url=api, data=data, cookies=self.cookies, headers=PC_HEADER).text
-
 
 # =========== unit test=============
 # wv = WeiboV2("13515105572", "Weious136")
