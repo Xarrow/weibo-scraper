@@ -42,6 +42,45 @@ class WeiboScraperException(Exception):
         self.message = message
 
 
+class WeiboScraper(object):
+    def __init__(self):
+        pass
+
+    def get_weibo_tweets_by_name(self, name: str, pages: int = None) -> _TweetsResponse:
+        return get_weibo_tweets_by_name(name=name, pages=pages)
+
+    def get_weibo_tweets(self, tweet_container_id: str, pages: int = None) -> _TweetsResponse:
+        return get_weibo_tweets(tweet_container_id=tweet_container_id, pages=pages)
+
+    def get_formatted_weibo_tweets_by_name(self, name: str,
+                                           with_comments: bool = False,
+                                           pages: int = None) -> _TweetsResponse:
+        return get_formatted_weibo_tweets_by_name(name=name, with_comments=with_comments, pages=pages)
+
+    def get_weibo_tweets_formatted(self, tweet_container_id: str, with_comments: bool, pages: int = None,
+                                   max_item_limit: int = None) -> _TweetsResponse:
+        return get_weibo_tweets_formatted(tweet_container_id=tweet_container_id,
+                                          with_comments=with_comments,
+                                          pages=pages,
+                                          max_item_limit=max_item_limit)
+
+    def get_weibo_profile(self, name: str = None, uid: str = None) -> _UserMetaResponse:
+        return get_weibo_profile(name=name, uid=uid)
+
+    def get_follows_and_followers(self, name: str = None, uid: str = None, pages: int = None,
+                                  invoke_flag: int = FOLLOW_FLAG):
+        return get_follows_and_followers(name=name, uid=uid, pages=pages, invoke_flag=invoke_flag)
+
+    def get_follows(self, name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None):
+        return get_followers(name=name, uid=uid, pages=pages, max_item_limit=max_item_limit)
+
+    def get_followers(self, name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None):
+        return get_followers(name=name, uid=uid, pages=pages, max_item_limit=max_item_limit)
+
+    def get_realtime_hotwords(self) -> List[RealTimeHotWordResponse]:
+        return get_realtime_hotwords()
+
+
 def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     """
     Get raw weibo tweets by nick name without any authorization
