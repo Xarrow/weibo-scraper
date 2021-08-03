@@ -45,7 +45,7 @@ $ pip install --upgrade weibo-scraper
 
 ```shell
 
-$ pipenv install weibo-scraper==1.0.7b0
+$ pipenv install weibo-scraper
 
 ```
 Or Upgrade it.
@@ -143,9 +143,7 @@ raw_user_response|原始返回|Option[dict]||
 >>> ....
 ```
 
-4. There is a giant update since 1.0.6 🍰!
-
-You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_tweets_by_name`,
+4. You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_tweets_by_name`,
 
 ```python
 >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
@@ -159,6 +157,20 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 
 
 ![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png)
+
+5. Get realtime hot words
+
+```
+hotwords = weibo_scraper.get_realtime_hotwords()
+    for hw in hotwords:
+        print(str(hw))
+```
+
+6. Get realtime hot words  in every interval
+
+wt = Timer(name="realtime_hotword_timer", fn=weibo_scraper.get_realtime_hotwords, interval=1)
+wt.set_ignore_ex(True)
+wt.scheduler()
 
 <!-- ---- -->
 
