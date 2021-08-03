@@ -160,23 +160,23 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 
 ![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png)
 
-----
+<!-- ---- -->
 
-# Weibo Flasgger
+<!-- # Weibo Flasgger -->
 
 
-[Weibo Flasgger](https://github.com/Xarrow/weibo-scraper/blob/search_name/samples/weibo_flasgger/FLASGGER_README.md) is a web api document for weibo scraper , and powered by flasgger .
+<!-- [Weibo Flasgger](https://github.com/Xarrow/weibo-scraper/blob/search_name/samples/weibo_flasgger/FLASGGER_README.md) is a web api document for weibo scraper , and powered by flasgger . -->
 
-![img](https://raw.githubusercontent.com/rochacbruno/flasgger/master/docs/flasgger.png)
+<!-- ![img](https://raw.githubusercontent.com/rochacbruno/flasgger/master/docs/flasgger.png) -->
 
-# P.S
-1. Inspiration from [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) .
+<!-- # P.S -->
+<!-- 1. Inspiration from [Twitter-Scraper](https://github.com/kennethreitz/twitter-scraper) . -->
 
-2. For 'XIHONGDOU' .
+<!-- 2. For 'XIHONGDOU' . -->
 
-3. Welcome To Fork Me .
+<!-- 3. Welcome To Fork Me . -->
 
-----
+<!-- ---- -->
 # LICENSE
 
 MIT
