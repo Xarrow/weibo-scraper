@@ -28,7 +28,7 @@ In general , we can inspect mobile site which has it's own API by Chrome.
 
 ```shell
 
-$ pip install weibo-scraper==1.0.7rc1.dev1
+$ pip install weibo-scraper
 
 ```
 
@@ -181,4 +181,6 @@ You can also get formatted tweets via api of `weibo_scrapy.get_formatted_weibo_t
 
 MIT
 
-Powered by Jetbrains OpenSource License
+This Project Powered By Jetbrains OpenSource License
+
+![img](asserts/jetbrains.svg)
