@@ -160,7 +160,7 @@ raw_user_response|原始返回|Option[dict]||
 
 5. Get realtime hot words
 
-```
+```python
 hotwords = weibo_scraper.get_realtime_hotwords()
     for hw in hotwords:
         print(str(hw))
@@ -168,9 +168,11 @@ hotwords = weibo_scraper.get_realtime_hotwords()
 
 6. Get realtime hot words  in every interval
 
+```python
 wt = Timer(name="realtime_hotword_timer", fn=weibo_scraper.get_realtime_hotwords, interval=1)
 wt.set_ignore_ex(True)
 wt.scheduler()
+```
 
 <!-- ---- -->
 
