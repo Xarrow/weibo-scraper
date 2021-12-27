@@ -32,10 +32,10 @@ if __name__ == '__main__':
     wp = weibo_scraper.get_weibo_profile(name='嘻红豆')
     print(wp.raw_user_response)
 
-    # hotwords = weibo_scraper.get_realtime_hotwords()
-    # for hw in hotwords:
-    #     print(str(hw))
-    # pass
-    # wt = Timer(name="realtime_hotword_timer", fn=weibo_scraper.get_realtime_hotwords, interval=1)
-    # wt.set_ignore_ex(True)
-    # wt.scheduler()
+    hotwords = weibo_scraper.get_realtime_hotwords()
+    for hw in hotwords:
+        print(str(hw))
+    pass
+    wt = Timer(name="realtime_hotword_timer", fn=weibo_scraper.get_realtime_hotwords, interval=1)
+    wt.set_ignore_ex(True)
+    wt.scheduler()
