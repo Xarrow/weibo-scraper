@@ -300,25 +300,3 @@ class WeiboV2(object):
             "_t": 0
         }
         return self.request.post(url=api, data=data, cookies=self.cookies, headers=PC_HEADER).text
-
-# =========== unit test=============
-# wv = WeiboV2("13515105572", "Weious136")
-#
-# wv.login_for_sso()
-# from weibo_base.weibo_util import Timer, TimerManager, rt_logger
-#
-#
-# @rt_logger
-# def hw():
-#     for item in realtime_hotword().get('data').get('cards')[0].get('card_group'):
-#         if item.get('promotion'):
-#             continue
-#         print(item.get('desc'), 0 if item.get('desc_extr') is None else item.get('desc_extr'), item.get('scheme'))
-#
-#
-# wt = Timer(name="realtime_hotword_timer", fn=hw, interval=60)
-# wt.set_ignore_ex(True)
-# wt.scheduler()
-
-# print(requests.post(url="https://httpbin.org/post",json={"da":"da"}).json())
-# print(requests.get("https://twitter.com").text)
