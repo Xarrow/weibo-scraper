@@ -41,6 +41,7 @@ def rt_logger(func):
         __start_time = int(time() * 1000)
         __response = func(*args, **kwargs)
         __end_time = int(time() * 1000)
+        is_debug = logger.level == logging.DEBUG
         if is_debug:
             logger.debug("[ws] [rt_logger] func: [ %s ], args:[ %s ] execute spend: [ %s ms ] ." % (
                 func.__name__, (args, kwargs), (__end_time - __start_time)))
@@ -116,6 +117,17 @@ def handle_exec_tb(tb_exec, _ext: list, cls_methods_tag_set: set):
 
 
 class AntiStrategy(object):
+    def do_strategy(self):
+        raise "do_strategy not implemented"
+
+
+class SleepStrategy(AntiStrategy):
+    def do_strategy(self):
+
+        pass
+
+
+def before_request_intercept(method, url, **kwargs):
     pass
 
 
@@ -123,10 +135,12 @@ class RequestProxy(object):
     def __init__(self):
         super().__init__()
 
-    def session(self):
+    @staticmethod
+    def session() -> requests.Session:
         return requests.Session()
 
-    def requests_proxy(self, method, url, **kwargs):
+    @staticmethod
+    def requests_proxy(method, url, **kwargs) -> requests.Response:
         """
         request proxy
         """
@@ -135,19 +149,21 @@ class RequestProxy(object):
             'http': 'socks5://127.0.0.1:1086',
             'https': 'socks5://127.0.0.1:1086',
         }
+        # rewrite requests
+        before_request_intercept(method, url, **kwargs)
         # kwargs.setdefault("proxies", proxies)
         response = requests.request(method, url, **kwargs)
         # print("after request")
         return response
 
-    def get(self, url, params=None, **kwargs):
+    def get(self, url, params=None, **kwargs) -> requests.Response:
         """
         @see requests.sessions.Session
         """
         kwargs.setdefault('allow_redirects', True)
         return self.requests_proxy('GET', url, params=params, **kwargs)
 
-    def post(self, url, data=None, json=None, **kwargs):
+    def post(self, url, data=None, json=None, **kwargs) -> requests.Response:
         return self.requests_proxy('post', url, data=data, json=json, **kwargs)
 
 
