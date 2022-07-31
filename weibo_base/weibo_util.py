@@ -10,9 +10,13 @@
 import logging
 import threading
 import sys
+from abc import abstractmethod
+
 import requests
 from contextlib import contextmanager
 from time import time
+
+from requests import sessions
 
 level = logging.INFO
 ws_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -116,6 +120,9 @@ def handle_exec_tb(tb_exec, _ext: list, cls_methods_tag_set: set):
     handle_exec_tb(tb_exec.tb_next, _ext, cls_methods_tag_set)
 
 
+# todo
+#  AntiStrategy
+#  反爬虫策略
 class AntiStrategy(object):
     def do_strategy(self):
         raise "do_strategy not implemented"
@@ -123,38 +130,140 @@ class AntiStrategy(object):
 
 class SleepStrategy(AntiStrategy):
     def do_strategy(self):
-
         pass
 
 
-def before_request_intercept(method, url, **kwargs):
-    pass
+class ProxyStrategy(AntiStrategy):
+    def do_strategy(self):
+        pass
 
 
-class RequestProxy(object):
+# RequestProcessor
+class RequestProcessor(object):
+    def __init__(self, ):
+        pass
+
+    def processor_name(self):
+        """
+        default current processor class name
+        :return:
+        """
+        return self.__class__.__name__
+
+    @abstractmethod
+    def ignore_exception(self, ):
+        raise "ignore_exception not implemented"
+
+    @abstractmethod
+    def before_request_intercept(self, prepped, method: str, url: str, **kwargs):
+        raise "before_request_intercept not implemented"
+
+    @abstractmethod
+    def after_request_intercept(self, response: requests.Response):
+        raise "before_request_intercept not implemented"
+
+
+# RequestProcessorChains
+class RequestProcessorChains(object):
+
+    @abstractmethod
+    def add_processor(self, requestProcessor: RequestProcessor):
+        pass
+
+    @abstractmethod
+    def remove_processor(self, requestProcessor: RequestProcessor):
+        pass
+
+    @abstractmethod
+    def clear(self, ):
+        pass
+
+    @abstractmethod
+    def execute_before_intercept(self, prepped, method: str, url: str, **kwargs):
+        pass
+
+    @abstractmethod
+    def execute_after_intercept(self, response: requests.Response):
+        pass
+
+
+class MapRequestProcessorChains(RequestProcessorChains):
+    def __init__(self):
+        self._chains = {}
+        super().__init__()
+
+    def add_processor(self, requestProcessor: RequestProcessor):
+        self._chains[requestProcessor.processor_name()] = requestProcessor
+        pass
+
+    def remove_processor(self, requestProcessor: RequestProcessor):
+        self._chains.pop(requestProcessor.processor_name())
+        pass
+
+    def clear(self):
+        self._chains.clear()
+        pass
+
+    def execute_before_intercept(self, prepped, method: str, url: str, **kwargs):
+        for item in self._chains.items():
+            processor_name = item[0]
+            processor = item[1]
+            processor.before_request_intercept(prepped, method, url, **kwargs)
+
+    def execute_after_intercept(self, response: requests.Response):
+        for item in self._chains.items():
+            processor_name = item[0]
+            processor = item[1]
+            processor.after_request_intercept(response)
+
+
+class SocketsProxyRequestProcessor(RequestProcessor):
     def __init__(self):
         super().__init__()
 
-    @staticmethod
-    def session() -> requests.Session:
-        return requests.Session()
+    def before_request_intercept(self, prepped, method: str, url: str, **kwargs):
+        pass
+
+    def after_request_intercept(self, response: requests.Response):
+        pass
+
+
+# todo
+class RQWrapper(object):
+    def __init__(self, method, url, **kwargs):
+        pass
+
+
+class RequestProxy(object):
+    def __init__(self, ):
+        self._request_processor_chains = None
+        super().__init__()
+
+    def set_request_processor_chains(self, requestProcessorChains: RequestProcessorChains):
+        self._request_processor_chains = requestProcessorChains
 
     @staticmethod
-    def requests_proxy(method, url, **kwargs) -> requests.Response:
+    def session() -> requests.Session:
+        requests.get()
+        return requests.Session()
+
+    def requests_proxy(self, method, url, **kwargs) -> requests.Response:
         """
         request proxy
         """
-        # print("before request")
-        proxies = {
-            'http': 'socks5://127.0.0.1:1086',
-            'https': 'socks5://127.0.0.1:1086',
-        }
-        # rewrite requests
-        before_request_intercept(method, url, **kwargs)
-        # kwargs.setdefault("proxies", proxies)
-        response = requests.request(method, url, **kwargs)
-        # print("after request")
-        return response
+        with sessions.Session() as session:
+            req = requests.Request(method=method, url=url)
+            prepped = session.prepare_request(req)
+            # before
+            if self._request_processor_chains:
+                self._request_processor_chains.execute_before_intercept(prepped, method, url, **kwargs)
+            # request
+            response = session.request(method=method, url=url, **kwargs)
+            # after
+            if self._request_processor_chains:
+                self._request_processor_chains.execute_after_intercept(response)
+
+            return response
 
     def get(self, url, params=None, **kwargs) -> requests.Response:
         """
@@ -164,7 +273,7 @@ class RequestProxy(object):
         return self.requests_proxy('GET', url, params=params, **kwargs)
 
     def post(self, url, data=None, json=None, **kwargs) -> requests.Response:
-        return self.requests_proxy('post', url, data=data, json=json, **kwargs)
+        return self.requests_proxy('POST', url, data=data, json=json, **kwargs)
 
 
 @contextmanager

@@ -19,14 +19,14 @@ if __name__ == '__main__':
     set_debug()
     #  Test RequestProxy
 
-    # uid = exist_get_uid(name='嘻红豆')
-    # print(uid)
+    uid = exist_get_uid(name='嘻红豆')
+    print(uid)
     # containerid = get_tweet_containerid(uid=uid.get('uid'))
     # print(containerid)
     #
-    # result = weibo_scraper.get_weibo_tweets_by_name(name="嘻红豆", pages=1)
-    # for tweet in result:
-    #     print(tweet)
+    result = weibo_scraper.get_weibo_tweets_by_name(name="嘻红豆", pages=1)
+    for tweet in result:
+        print(tweet)
     # result = weibo_scraper.get_weibo_tweets(tweet_container_id=containerid, pages=1)
     # for tweet in result:
     #     print(tweet)
@@ -39,6 +39,6 @@ if __name__ == '__main__':
     #     print(str(hw))
     # pass
     #
-    # wt = Timer(name="realtime_hotword_timer", fn=weibo_scraper.get_realtime_hotwords, interval=1)
-    # wt.set_ignore_ex(True)
-    # wt.scheduler()
+    wt = Timer(name="realtime_hotword_timer", fn=weibo_scraper.get_realtime_hotwords, interval=10)
+    wt.set_ignore_ex(True)
+    wt.scheduler()
