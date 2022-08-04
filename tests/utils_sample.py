@@ -35,6 +35,9 @@ if __name__ == '__main__':
 
     requests_proxy.set_request_processor_chains(chains)
 
-    response = requests_proxy.get("https://taobao.com")
+    response = requests_proxy.get("https://baidu.com")
+    import requests
+
+    print(requests.get("https://baidu.com").text)
 
     pass
