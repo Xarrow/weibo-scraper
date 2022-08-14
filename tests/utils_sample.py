@@ -19,7 +19,6 @@ class SimpleInterceptorRequestProcessor(RequestProcessor):
         pass
 
     def before_request_intercept(self, prepped: requests.PreparedRequest, method: str, url: str, **kwargs):
-        prepped.url = "https://baidu.com"
         logger.info("RQ : {}, {}, {}".format(method, url, kwargs))
         pass
 
@@ -36,8 +35,6 @@ if __name__ == '__main__':
     requests_proxy.set_request_processor_chains(chains)
 
     response = requests_proxy.get("https://baidu.com")
-    import requests
 
-    print(requests.get("https://baidu.com").text)
-
-    pass
+    # import requests
+    # requests.get()
