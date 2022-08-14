@@ -19,7 +19,7 @@ from weibo_base.weibo_parser import \
     WeiboTweetParser, \
     FollowAndFollowerParser, \
     RealTimeHotWordResponse
-from weibo_base.weibo_util import rt_logger, ws_handle, set_debug, WeiboScraperException
+from weibo_base.weibo_util import rt_logger, ws_handle, set_debug,  logger,WeiboScraperException
 
 try:
     assert sys.version_info.major == 3
@@ -58,6 +58,7 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
         yield from get_weibo_tweets(tweet_container_id=inner_tweet_container_id, pages=pages)
     else:
         raise WeiboScraperException("`{name}` can not find!".format(name=name))
+
 
 @ws_handle
 def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
@@ -105,6 +106,7 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
 
     yield from gen()
 
+
 @ws_handle
 def get_formatted_weibo_tweets_by_name(name: str,
                                        with_comments: bool = False,
@@ -133,6 +135,7 @@ def get_formatted_weibo_tweets_by_name(name: str,
                                               pages=pages)
     else:
         raise WeiboScraperException("`{name}` can not find!".format(name=name))
+
 
 @ws_handle
 def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pages: int = None,
@@ -219,6 +222,7 @@ def weibo_get_index_parser(name: str = None, uid: str = None) -> _WeiboGetIndexR
         return None
     return _weibo_get_index_response_parser
 
+
 @ws_handle
 def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
     """
@@ -251,7 +255,7 @@ def get_follows_and_followers(name: str = None,
     :return:
     """
 
-    def gen_follows_and_followers(_inner_current_page=1, _total_items=0):
+    def gen_follows_and_followers(_inner_current_page=1, _total_items=0) -> FollowAndFollowerParser:
         while True:
             # stop max pages
             if pages is not None and _inner_current_page > pages:
