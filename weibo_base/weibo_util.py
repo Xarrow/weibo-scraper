@@ -244,7 +244,6 @@ class RequestProxy(object):
 
     @staticmethod
     def session() -> requests.Session:
-        requests.get()
         return requests.Session()
 
     def requests_proxy(self, method, url, **kwargs) -> requests.Response:
@@ -252,13 +251,29 @@ class RequestProxy(object):
         request proxy
         """
         with sessions.Session() as session:
-            req = requests.Request(method=method, url=url)
-            prepped = session.prepare_request(req)
+            headers = kwargs.get("headers")
+            files = kwargs.get("files")
+            data = kwargs.get("data")
+            params = kwargs.get("params")
+            auth = kwargs.get("auth")
+            cookies = kwargs.get("cookies")
+            hooks = kwargs.get("hooks")
+            json = kwargs.get("json")
+            # for session
+            timeout = kwargs.get("timeout") or 60
+            verify = kwargs.get("verify") or False
+            proxies = kwargs.get("proxies") or {}
+            req = requests.Request(method=method, url=url, headers=headers,
+                                   files=files, data=data, params=params,
+                                   auth=auth, cookies=cookies, hooks=hooks, json=json)
+
+            # prepare
+            prepped = req.prepare()
             # before
             if self._request_processor_chains:
                 self._request_processor_chains.execute_before_intercept(prepped, method, url, **kwargs)
             # request
-            response = session.request(method=method, url=url, **kwargs)
+            response = session.send(prepped, timeout=timeout, verify=verify, proxies=proxies)
             # after
             if self._request_processor_chains:
                 self._request_processor_chains.execute_after_intercept(response)
@@ -273,6 +288,7 @@ class RequestProxy(object):
         return self.requests_proxy('GET', url, params=params, **kwargs)
 
     def post(self, url, data=None, json=None, **kwargs) -> requests.Response:
+        requests.get()
         return self.requests_proxy('POST', url, data=data, json=json, **kwargs)
 
 
