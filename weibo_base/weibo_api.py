@@ -7,9 +7,9 @@
  Time: 5/19/18
 """
 from typing import Optional
-from weibo_base.weibo_util import RequestProxy, WeiboApiException
+from weibo_base.weibo_util import RequestProxy as requests, WeiboApiException
 
-requests = RequestProxy()
+# import requests
 Response = Optional[dict]
 
 _GET_INDEX = "https://m.weibo.cn/api/container/getIndex"
