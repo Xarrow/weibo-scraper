@@ -179,7 +179,7 @@ class RQWrapper(object):
         self._cert = value
 
     def __repr__(self) -> str:
-        return f'RQWrapper<method={self.method},url={self.url}, headers={self.headers}......>'
+        return f'RQWrapper<method={self.method},url={self.url}, headers={self.headers}>'
 
 
 class WeiboApiException(Exception):
@@ -306,9 +306,9 @@ class RequestProcessor(object):
         """
         return self.__class__.__name__
 
-    @abstractmethod
-    def ignore_exception(self, ):
-        raise "ignore_exception not implemented"
+    def ignore_exception(self, )-> bool:
+        return True
+
 
     @abstractmethod
     def before_request_intercept(self, rq_wrapper: RQWrapper):
@@ -316,7 +316,7 @@ class RequestProcessor(object):
 
     @abstractmethod
     def after_request_intercept(self, response: requests.Response):
-        raise "before_request_intercept not implemented"
+        raise "after_request_intercept not implemented"
 
 
 # RequestProcessorChains
@@ -371,6 +371,7 @@ class MapRequestProcessorChains(RequestProcessorChains):
         for item in self._chains.items():
             processor_name = item[0]
             processor = item[1]
+            logger.debug("RequestProcessorChains:{}, response: {}".format(processor_name, response))
             processor.after_request_intercept(response)
 
 
