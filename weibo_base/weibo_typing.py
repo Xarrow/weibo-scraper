@@ -10,6 +10,6 @@
 
 from typing import Optional, Dict
 
-_JSONResponse = Optional[Dict]
+JSONResponse = Optional[Dict]
 _StrFieldResponse = Optional[str]
 _IntFieldResponse = Optional[int]

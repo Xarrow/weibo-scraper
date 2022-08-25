@@ -10,7 +10,7 @@ import datetime
 import sys
 from typing import Iterator, Optional, List, Dict
 
-from weibo_base.weibo_api import weibo_tweets, weibo_getIndex, weibo_second, weibo_comments, realtime_hotword
+from weibo_base.weibo_api import weibo_tweets, weibo_get_index, weibo_second, weibo_comments, realtime_hotword
 from weibo_base.weibo_component import exist_get_uid, get_tweet_containerid
 from weibo_base.weibo_parser import \
     WeiboCommentParser, \
@@ -216,7 +216,7 @@ def weibo_get_index_parser(name: str = None, uid: str = None) -> _WeiboGetIndexR
         _uid = _egu_response.get('uid')
     else:
         return None
-    _weibo_get_index_response_parser = WeiboGetIndexParser(get_index_api_response=weibo_getIndex(uid_value=_uid))
+    _weibo_get_index_response_parser = WeiboGetIndexParser(get_index_api_response=weibo_get_index(uid_value=_uid))
     if _weibo_get_index_response_parser.raw_response is None \
             or _weibo_get_index_response_parser.raw_response.get('data') == 0:
         return None

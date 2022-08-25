@@ -82,7 +82,7 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_weibo_get_index_parser(self):
         # test get weibo profile
-        get_inex_response = weibo_getIndex(uid_value='1111681197')
+        get_inex_response = weibo_get_index(uid_value='1111681197')
         wgip = WeiboGetIndexParser(get_index_api_response=get_inex_response)
         print(wgip)
 

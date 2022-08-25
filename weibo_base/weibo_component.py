@@ -10,7 +10,7 @@
 # =========== api component ==============
 from typing import Dict
 from weibo_base.weibo_api import search_by_name
-from weibo_base.weibo_parser import weibo_getIndex, WeiboGetIndexParser
+from weibo_base.weibo_parser import weibo_get_index, WeiboGetIndexParser
 
 
 def exist_get_uid(search_by_name_response: str = None, name: str = "") -> Dict:
@@ -45,7 +45,7 @@ def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
     """
 
     if weibo_get_index_response is None or str(weibo_get_index_response) == '':
-        weibo_get_index_response = weibo_getIndex(uid)
+        weibo_get_index_response = weibo_get_index(uid)
     if weibo_get_index_response.get('ok') != 1:
         return None
 

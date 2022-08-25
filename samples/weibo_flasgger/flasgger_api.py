@@ -71,7 +71,7 @@ def search_by_name_api(name):
 @app.route("/api/weiboBase/weibo_getIndex/<uid_value>", methods=['GET'])
 @swag_from('ymls/weibo_getIndex.yml')
 def weibo_getIndex_api(uid_value):
-    return jsonify(weibo_getIndex(uid_value=uid_value))
+    return jsonify(weibo_get_index(uid_value=uid_value))
 
 
 @app.route("/api/weiboBase/weibo_tweets/<containerid>/<page>", methods=["GET"])

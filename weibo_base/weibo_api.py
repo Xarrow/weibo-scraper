@@ -6,19 +6,17 @@
  File: weibo_api.py
  Time: 5/19/18
 """
-from typing import Optional
+from weibo_base import JSONResponse
 from weibo_base.weibo_util import RequestProxy, WeiboApiException
 
 request_proxy = RequestProxy()
-
-Response = Optional[dict]
 
 _GET_INDEX = "https://m.weibo.cn/api/container/getIndex"
 _GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 _COMMENTS_HOTFLOW = "https://m.weibo.cn/comments/hotflow"
 
 
-def search_by_name(name: str) -> Response:
+def search_by_name(name: str) -> JSONResponse:
     """get summary info which searched by name,
      this api is like 'https://m.weibo.cn/api/container/getIndex?queryVal=<name sample as Helixcs>&containerid=100103type%3D3%26q%3D<name sample as Helixcs>'
 
@@ -31,27 +29,32 @@ def search_by_name(name: str) -> Response:
     _response = request_proxy.get(url=_GET_INDEX, params=_params)
     if _response.status_code == 200:
         return _response.json()
-    return None
+    raise WeiboApiException(
+        "search_by_name request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params,
+                                                                                _response if _response is None else _response.text))
 
 
-def weibo_getIndex(uid_value: str) -> Response:
+def weibo_get_index(uid_value: str) -> JSONResponse:
     """
     get personal summary info which request by uid, and uid is got by 'search_by_name'
     this api is like 'https://m.weibo.cn/api/container/getIndex?type=uid&value=<uid_value sample as 1843242321>'
 
-    >>> from weibo_base import  weibo_getIndex
-    >>> _response = weibo_getIndex('1843242321')
+    >>> from weibo_base import  weibo_get_index
+    >>> _response = weibo_get_index('1843242321')
     :param uid_value:
     :return:
     """
     _params = {"type": "uid", "value": uid_value}
     _response = request_proxy.get(url=_GET_INDEX, params=_params)
     if _response.status_code == 200:
+        # raise WeiboApiException("mock exception")
         return _response.json()
-    return None
+    raise WeiboApiException(
+        "weibo_get_index request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params,
+                                                                                 _response if _response is None else _response.text))
 
 
-def weibo_tweets(containerid: str, page: int) -> Response:
+def weibo_tweets(containerid: str, page: int) -> JSONResponse:
     """
     get person weibo tweets which from contaninerid in page,
     this api is like 'https://m.weibo.cn/container/getIndex?containerid=<containerid>&page=<page>'
@@ -70,7 +73,7 @@ def weibo_tweets(containerid: str, page: int) -> Response:
                                                                               _response if _response is None else _response.text))
 
 
-def weibo_containerid(containerid: str, page: int) -> Response:
+def weibo_containerid(containerid: str, page: int) -> JSONResponse:
     """
 
     :param containerid:
@@ -85,7 +88,7 @@ def weibo_containerid(containerid: str, page: int) -> Response:
         "weibo_containerid request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params, _response))
 
 
-def weibo_second(containerid: str, page: int) -> Response:
+def weibo_second(containerid: str, page: int) -> JSONResponse:
     """
     https://m.weibo.cn/api/container/getSecond
     :param containerid:
@@ -100,7 +103,7 @@ def weibo_second(containerid: str, page: int) -> Response:
         "weibo_second request failed, url={0},params={1},response={2}".format(_GET_SECOND, _params, _response))
 
 
-def weibo_comments(id: str, mid: str) -> Response:
+def weibo_comments(id: str, mid: str) -> JSONResponse:
     """
     https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
     get comments from userId and mid

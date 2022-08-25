@@ -306,9 +306,8 @@ class RequestProcessor(object):
         """
         return self.__class__.__name__
 
-    def ignore_exception(self, )-> bool:
+    def ignore_exception(self, ) -> bool:
         return True
-
 
     @abstractmethod
     def before_request_intercept(self, rq_wrapper: RQWrapper):
@@ -365,7 +364,14 @@ class MapRequestProcessorChains(RequestProcessorChains):
             processor_name = item[0]
             processor = item[1]
             logger.debug("RequestProcessorChains:{}, rq_wrapper: {}".format(processor_name, rq_wrapper))
-            processor.before_request_intercept(rq_wrapper)
+            try:
+                processor.before_request_intercept(rq_wrapper)
+            except Exception as ex:
+                if not processor.ignore_exception:
+                    raise ex
+                else:
+                    logger.error(
+                        "RequestProcessorChains:{} exception:{}, rq_wrapper: {}".format(processor_name, ex, rq_wrapper))
 
     def execute_after_intercept(self, response: requests.Response):
         for item in self._chains.items():
