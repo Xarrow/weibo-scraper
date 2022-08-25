@@ -210,11 +210,8 @@ def rt_logger(func):
     return func_wrapper
 
 
-def api_ex_handle(func):
-    pass
-
-
-def ws_handle(func):
+#  处理增强
+def handle_enhance(func):
     def func_wrapper(*args, **kwargs):
         is_debug = logger.level == logging.DEBUG
         start_time = int(time() * 1000)
@@ -253,6 +250,7 @@ def ws_handle(func):
     return func_wrapper
 
 
+#  处理异常堆栈
 def handle_exec_tb(tb_exec, _ext: list, cls_methods_tag_set: set):
     if not hasattr(tb_exec, "tb_frame"):
         return
@@ -294,8 +292,11 @@ class ProxyStrategy(AntiStrategy):
         pass
 
 
-# RequestProcessor
 class RequestProcessor(object):
+    """
+    RequestProcessor basic processor
+    """
+
     def __init__(self, ):
         pass
 
@@ -318,8 +319,11 @@ class RequestProcessor(object):
         raise "after_request_intercept not implemented"
 
 
-# RequestProcessorChains
 class RequestProcessorChains(object):
+    """RequestProcessorChains basic chains"""
+
+    def __init__(self):
+        pass
 
     @abstractmethod
     def add_processor(self, requestProcessor: RequestProcessor):
@@ -338,7 +342,7 @@ class RequestProcessorChains(object):
         pass
 
     @abstractmethod
-    def execute_after_intercept(self, response: requests.Response):
+    def execute_after_intercept(self, response: requests.Response, exception: BaseException):
         pass
 
 
@@ -373,12 +377,15 @@ class MapRequestProcessorChains(RequestProcessorChains):
                     logger.error(
                         "RequestProcessorChains:{} exception:{}, rq_wrapper: {}".format(processor_name, ex, rq_wrapper))
 
-    def execute_after_intercept(self, response: requests.Response):
+    def execute_after_intercept(self, response: requests.Response, exception: BaseException):
         for item in self._chains.items():
             processor_name = item[0]
             processor = item[1]
             logger.debug("RequestProcessorChains:{}, response: {}".format(processor_name, response))
-            processor.after_request_intercept(response)
+            try:
+                processor.after_request_intercept(response)
+            except Exception as ex:
+                exception = ex
 
 
 class SocketsProxyRequestProcessor(RequestProcessor):

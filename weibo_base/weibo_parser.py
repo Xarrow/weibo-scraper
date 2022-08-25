@@ -13,7 +13,7 @@ import re
 
 from weibo_base.weibo_util import logger
 from weibo_base.weibo_api import weibo_tweets, weibo_get_index, WeiboApiException, weibo_comments
-from weibo_base.weibo_typing import JSONResponse, _StrFieldResponse, _IntFieldResponse
+from weibo_base.weibo_typing import _JSONResponse, _StrFieldResponse, _IntFieldResponse
 from typing import List, Optional
 
 now = datetime.datetime.now()
@@ -29,7 +29,7 @@ class BaseParser(object):
         self._raw_response = raw_response
 
     @property
-    def raw_response(self) -> JSONResponse:
+    def raw_response(self) -> _JSONResponse:
         return self._raw_response
 
 
@@ -40,7 +40,7 @@ class UserMeta(object):
         self.user_node = user_node
 
     @property
-    def raw_user_response(self) -> JSONResponse:
+    def raw_user_response(self) -> _JSONResponse:
         return self.user_node
 
     @property
@@ -95,15 +95,15 @@ class UserMeta(object):
 class CommentMeta(object):
     __slots__ = ["_comment_meta"]
 
-    def __init__(self, comment_meta: JSONResponse) -> None:
+    def __init__(self, comment_meta: _JSONResponse) -> None:
         self._comment_meta = comment_meta
 
     @property
-    def raw_comment_meta(self) -> JSONResponse:
+    def raw_comment_meta(self) -> _JSONResponse:
         return self._comment_meta
 
     @raw_comment_meta.setter
-    def raw_comment_meta(self, value: JSONResponse):
+    def raw_comment_meta(self, value: _JSONResponse):
         self._comment_meta = value
 
     @property
@@ -115,15 +115,15 @@ class CommentMeta(object):
         return None if self._comment_meta is None else self._comment_meta.get("id")
 
     @property
-    def rootid(self) -> JSONResponse:
+    def rootid(self) -> _JSONResponse:
         return None if self._comment_meta is None else self._comment_meta.get("rootid")
 
     @property
-    def floor_number(self) -> JSONResponse:
+    def floor_number(self) -> _JSONResponse:
         return None if self._comment_meta is None else self._comment_meta.get("floor_number")
 
     @property
-    def text(self) -> JSONResponse:
+    def text(self) -> _JSONResponse:
         return None if self._comment_meta is None else self._comment_meta.get("text")
 
     @property
@@ -176,7 +176,7 @@ class WeiboCommentParser(object):
 
     __slots__ = ['_comment_node']
 
-    def __init__(self, comment_node: JSONResponse) -> None:
+    def __init__(self, comment_node: _JSONResponse) -> None:
         self._comment_node = comment_node
 
     @property
@@ -184,11 +184,11 @@ class WeiboCommentParser(object):
         return self._comment_node
 
     @raw_comment_node.setter
-    def raw_comment_node(self, value: JSONResponse):
+    def raw_comment_node(self, value: _JSONResponse):
         self._comment_node = value
 
     @property
-    def outer_data_node(self) -> JSONResponse:
+    def outer_data_node(self) -> _JSONResponse:
         if self._comment_node is None: return None
         if self._comment_node.get("data") is None:
             return None
@@ -213,7 +213,7 @@ class PicMeta(object):
         self.pic_node = pic_node
 
     @property
-    def raw_pics(self) -> JSONResponse:
+    def raw_pics(self) -> _JSONResponse:
         return self.pic_node
 
     @property
@@ -237,11 +237,11 @@ class MBlogMeta(object):
         self._comment_parser = None
 
     @property
-    def raw_mblog_node(self) -> JSONResponse:
+    def raw_mblog_node(self) -> _JSONResponse:
         return self._mblog_node
 
     @raw_mblog_node.setter
-    def raw_mblog_node(self, value: JSONResponse):
+    def raw_mblog_node(self, value: _JSONResponse):
         self._mblog_node = value
 
     @property
@@ -398,7 +398,7 @@ class WeiboTweetParser(object):
                    self._tweet_get_index_reponse.get('data').get('cards')))]
 
     @property
-    def raw_tweet_response(self) -> JSONResponse:
+    def raw_tweet_response(self) -> _JSONResponse:
         return self._tweet_get_index_reponse
 
     @raw_tweet_response.setter
@@ -406,7 +406,7 @@ class WeiboTweetParser(object):
         self._tweet_get_index_reponse = value
 
     @property
-    def card_list_info_node(self) -> JSONResponse:
+    def card_list_info_node(self) -> _JSONResponse:
         return self._tweet_get_index_reponse.get('data').get('cardlistInfo')
 
     @property
@@ -444,15 +444,15 @@ class WeiboGetIndexParser(object):
             self.get_index_api_response = weibo_get_index(uid_value=self.uid)
 
     @property
-    def raw_response(self) -> JSONResponse:
+    def raw_response(self) -> _JSONResponse:
         return self.get_index_api_response
 
     @property
-    def user_info_node(self) -> JSONResponse:
+    def user_info_node(self) -> _JSONResponse:
         return self.get_index_api_response.get('data').get('userInfo')
 
     @property
-    def tabs_node(self) -> JSONResponse:
+    def tabs_node(self) -> _JSONResponse:
         return self.get_index_api_response.get('data').get('tabsInfo').get('tabs')
 
     @property

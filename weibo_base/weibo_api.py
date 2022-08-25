@@ -6,7 +6,7 @@
  File: weibo_api.py
  Time: 5/19/18
 """
-from weibo_base import JSONResponse
+from weibo_base.weibo_typing import _JSONResponse
 from weibo_base.weibo_util import RequestProxy, WeiboApiException
 
 request_proxy = RequestProxy()
@@ -16,7 +16,7 @@ _GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 _COMMENTS_HOTFLOW = "https://m.weibo.cn/comments/hotflow"
 
 
-def search_by_name(name: str) -> JSONResponse:
+def search_by_name(name: str) -> _JSONResponse:
     """get summary info which searched by name,
      this api is like 'https://m.weibo.cn/api/container/getIndex?queryVal=<name sample as Helixcs>&containerid=100103type%3D3%26q%3D<name sample as Helixcs>'
 
@@ -34,7 +34,7 @@ def search_by_name(name: str) -> JSONResponse:
                                                                                 _response if _response is None else _response.text))
 
 
-def weibo_get_index(uid_value: str) -> JSONResponse:
+def weibo_get_index(uid_value: str) -> _JSONResponse:
     """
     get personal summary info which request by uid, and uid is got by 'search_by_name'
     this api is like 'https://m.weibo.cn/api/container/getIndex?type=uid&value=<uid_value sample as 1843242321>'
@@ -54,7 +54,7 @@ def weibo_get_index(uid_value: str) -> JSONResponse:
                                                                                  _response if _response is None else _response.text))
 
 
-def weibo_tweets(containerid: str, page: int) -> JSONResponse:
+def weibo_tweets(containerid: str, page: int) -> _JSONResponse:
     """
     get person weibo tweets which from contaninerid in page,
     this api is like 'https://m.weibo.cn/container/getIndex?containerid=<containerid>&page=<page>'
@@ -73,7 +73,7 @@ def weibo_tweets(containerid: str, page: int) -> JSONResponse:
                                                                               _response if _response is None else _response.text))
 
 
-def weibo_containerid(containerid: str, page: int) -> JSONResponse:
+def weibo_containerid(containerid: str, page: int) -> _JSONResponse:
     """
 
     :param containerid:
@@ -88,7 +88,7 @@ def weibo_containerid(containerid: str, page: int) -> JSONResponse:
         "weibo_containerid request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params, _response))
 
 
-def weibo_second(containerid: str, page: int) -> JSONResponse:
+def weibo_second(containerid: str, page: int) -> _JSONResponse:
     """
     https://m.weibo.cn/api/container/getSecond
     :param containerid:
@@ -103,7 +103,7 @@ def weibo_second(containerid: str, page: int) -> JSONResponse:
         "weibo_second request failed, url={0},params={1},response={2}".format(_GET_SECOND, _params, _response))
 
 
-def weibo_comments(id: str, mid: str) -> JSONResponse:
+def weibo_comments(id: str, mid: str) -> _JSONResponse:
     """
     https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
     get comments from userId and mid
