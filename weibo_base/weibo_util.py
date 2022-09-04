@@ -278,6 +278,21 @@ def handle_exec_tb(tb_exec, _ext: list, cls_methods_tag_set: set):
 #  AntiStrategy
 #  反爬虫策略
 class AntiStrategy(object):
+    def __init__(self):
+        # 统计时间间隔内失败率，30%
+        self._failure_rate_threshold_condition = None
+        #  统计时间间隔，1min
+        self._statics_time_interval = None
+        # 单位时间内成功的次数
+        self._success_count = 0
+        # 单位时间内失败次数
+        self._failure_count = 0
+
+    @abstractmethod
+    def do_condition(self) -> bool:
+        raise "do_condition not implemented"
+
+    @abstractmethod
     def do_strategy(self):
         raise "do_strategy not implemented"
 
@@ -401,6 +416,9 @@ class SocketsProxyRequestProcessor(RequestProcessor):
 
 class RequestProxy(object):
     def __init__(self, ):
+        """
+        RequestProxy
+        """
         self._request_processor_chains = None
         super().__init__()
 
@@ -426,8 +444,8 @@ class RequestProxy(object):
             if self._request_processor_chains:
                 self._request_processor_chains.execute_before_intercept(rq_wrapper)
             # request
-            response = session.request(rq_wrapper.method,
-                                       rq_wrapper.url,
+            response = session.request(method=rq_wrapper.method,
+                                       url=rq_wrapper.url,
                                        params=rq_wrapper.params,
                                        data=rq_wrapper.data,
                                        headers=rq_wrapper.headers,
@@ -444,7 +462,7 @@ class RequestProxy(object):
                                        json=rq_wrapper.json)
             # after
             if self._request_processor_chains:
-                self._request_processor_chains.execute_after_intercept(response)
+                self._request_processor_chains.execute_after_intercept(response, None)
 
             return response
 
