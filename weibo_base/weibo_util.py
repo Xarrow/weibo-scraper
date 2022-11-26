@@ -11,12 +11,13 @@ import logging
 import threading
 import sys
 from abc import abstractmethod
+from typing import Tuple, Optional
 
 import requests
 from contextlib import contextmanager
 from time import time
 
-from requests import sessions
+from requests import sessions, Response
 
 level = logging.INFO
 ws_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -422,8 +423,8 @@ class RequestProxy(object):
         self._request_processor_chains = None
         super().__init__()
 
-    def set_request_processor_chains(self, requestProcessorChains: RequestProcessorChains):
-        self._request_processor_chains = requestProcessorChains
+    def set_request_processor_chains(self, request_processor_chains: RequestProcessorChains):
+        self._request_processor_chains = request_processor_chains
 
     @staticmethod
     def session() -> requests.Session:
@@ -433,7 +434,7 @@ class RequestProxy(object):
     def instance():
         return RequestProxy()
 
-    def requests_proxy(self, method, url, **kwargs) -> requests.Response:
+    def requests_proxy(self, method, url, **kwargs) -> Response:
         """
         request proxy
         """
@@ -444,26 +445,32 @@ class RequestProxy(object):
             if self._request_processor_chains:
                 self._request_processor_chains.execute_before_intercept(rq_wrapper)
             # request
-            response = session.request(method=rq_wrapper.method,
-                                       url=rq_wrapper.url,
-                                       params=rq_wrapper.params,
-                                       data=rq_wrapper.data,
-                                       headers=rq_wrapper.headers,
-                                       cookies=rq_wrapper.cookies,
-                                       files=rq_wrapper.files,
-                                       auth=rq_wrapper.auth,
-                                       timeout=rq_wrapper.timeout,
-                                       allow_redirects=rq_wrapper.allow_redirects,
-                                       proxies=rq_wrapper.proxies,
-                                       hooks=rq_wrapper.hooks,
-                                       stream=rq_wrapper.stream,
-                                       verify=rq_wrapper.verify,
-                                       cert=rq_wrapper.cert,
-                                       json=rq_wrapper.json)
+            invoke_ex = None
+            try:
+                response = session.request(method=rq_wrapper.method,
+                                           url=rq_wrapper.url,
+                                           params=rq_wrapper.params,
+                                           data=rq_wrapper.data,
+                                           headers=rq_wrapper.headers,
+                                           cookies=rq_wrapper.cookies,
+                                           files=rq_wrapper.files,
+                                           auth=rq_wrapper.auth,
+                                           timeout=rq_wrapper.timeout,
+                                           allow_redirects=rq_wrapper.allow_redirects,
+                                           proxies=rq_wrapper.proxies,
+                                           hooks=rq_wrapper.hooks,
+                                           stream=rq_wrapper.stream,
+                                           verify=rq_wrapper.verify,
+                                           cert=rq_wrapper.cert,
+                                           json=rq_wrapper.json)
+            except Exception as ex:
+                invoke_ex = ex
             # after
             if self._request_processor_chains:
-                self._request_processor_chains.execute_after_intercept(response, None)
+                self._request_processor_chains.execute_after_intercept(response, invoke_ex)
 
+            if invoke_ex is not None:
+                raise invoke_ex
             return response
 
     def get(self, url, params=None, **kwargs) -> requests.Response:
