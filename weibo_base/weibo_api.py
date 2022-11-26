@@ -125,7 +125,7 @@ def realtime_hotword():
         "weibo_comments request failed, url={0},params={1},response={2}".format(_COMMENTS_HOTFLOW, _params, _response))
 
 
-# ----------------------------------- 前方高能 ---------------------------
+# -----------------------------------   use by cookie ---------------------------
 HEADER = {
     "Connection": "keep-alive",
     "Host": "passport.weibo.cn",
