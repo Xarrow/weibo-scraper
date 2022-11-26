@@ -8,5 +8,7 @@ python setup.py sdist
 echo ">>> running python setup.py bdist_wheel --universal"
 python setup.py bdist_wheel --universal
 
+echo ">>> running twine check"
+twine check sdist/*
 echo ">>> running twine upload dist/* "
-twine upload dist/*
+twine upload dist/* --skip-existing

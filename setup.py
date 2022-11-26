@@ -45,8 +45,8 @@ class UploadCommand(Command):
 
 
 setup(
-    version="1.0.7rc1.dev1",
-    long_description=long_description,
+    version="1.0.7rc1.dev3",
+    long_description="",
     long_description_content_type="text/markdown",
     name="weibo-scraper",
     url="https://github.com/Xarrow/weibo-scraper",

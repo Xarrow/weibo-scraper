@@ -155,8 +155,7 @@ raw_user_response|原始返回|Option[dict]||
 >>> ....
 ```
 
-
-![img](https://raw.githubusercontent.com/Xarrow/weibo-scraper/master/weibo_tweets.png)
+![img](asserts/weibo_tweets.png)
 
 5. Get realtime hot words
 
