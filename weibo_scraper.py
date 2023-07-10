@@ -38,7 +38,7 @@ _WeiboGetIndexResponse = Optional[WeiboGetIndexParser]
 
 
 @ws_handle
-def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
+def get_weibo_tweets_by_name(name: str, pages: int = None, proxies: dict = None) -> _TweetsResponse:
     """
     Get raw weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_weibo_tweets_by_name
@@ -54,13 +54,13 @@ def get_weibo_tweets_by_name(name: str, pages: int = None) -> _TweetsResponse:
     exist = res.get("exist")
     uid = res.get("uid")
     if exist:
-        inner_tweet_container_id = get_tweet_containerid(uid=uid)
-        yield from get_weibo_tweets(tweet_container_id=inner_tweet_container_id, pages=pages)
+        inner_tweet_container_id = get_tweet_containerid(uid=uid, proxies=proxies)
+        yield from get_weibo_tweets(tweet_container_id=inner_tweet_container_id, pages=pages, proxies=proxies)
     else:
         raise WeiboScraperException("`{name}` can not find!".format(name=name))
 
 @ws_handle
-def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsResponse:
+def get_weibo_tweets(tweet_container_id: str, pages: int = None, proxies: dict = None) -> _TweetsResponse:
     """
     Get weibo tweets from mobile without authorization,and this containerid exist in the api of
 
@@ -80,11 +80,11 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
 
     # current_page_index = 1
 
-    def gen(_inner_current_page=1):
+    def gen(_inner_current_page=1, proxies=proxies):
         while True:
             if pages is not None and _inner_current_page > pages:
                 break
-            _response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page)
+            _response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page, proxies=proxies)
             # skip bad request
             if _response_json is None:
                 continue
@@ -103,12 +103,13 @@ def get_weibo_tweets(tweet_container_id: str, pages: int = None) -> _TweetsRespo
                 yield _card
             _inner_current_page += 1
 
-    yield from gen()
+    yield from gen(proxies=proxies)
 
 @ws_handle
 def get_formatted_weibo_tweets_by_name(name: str,
                                        with_comments: bool = False,
-                                       pages: int = None) -> _TweetsResponse:
+                                       pages: int = None,
+                                       proxies: dict = None) -> _TweetsResponse:
     """
     Get formatted weibo tweets by nick name without any authorization
     >>> from weibo_scraper import  get_formatted_weibo_tweets_by_name
@@ -123,20 +124,20 @@ def get_formatted_weibo_tweets_by_name(name: str,
     """
     if name == '':
         raise WeiboScraperException("name can not be blank!")
-    egu_res = exist_get_uid(name=name)
+    egu_res = exist_get_uid(name=name, proxies=proxies)
     exist = egu_res.get("exist")
     uid = egu_res.get("uid")
     if exist:
-        inner_tweet_containerid = get_tweet_containerid(uid=uid)
+        inner_tweet_containerid = get_tweet_containerid(uid=uid, proxies=proxies)
         yield from get_weibo_tweets_formatted(tweet_container_id=inner_tweet_containerid,
                                               with_comments=with_comments,
-                                              pages=pages)
+                                              pages=pages, proxies=proxies)
     else:
         raise WeiboScraperException("`{name}` can not find!".format(name=name))
 
 @ws_handle
 def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pages: int = None,
-                               max_item_limit: int = None) -> _TweetsResponse:
+                               max_item_limit: int = None, proxies: dict = None) -> _TweetsResponse:
     """
     Get weibo formatted tweets by container id
 
@@ -158,11 +159,11 @@ def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pag
     # TODO max items limit
     current_total_item = 0
 
-    def weibo_tweets_gen(_inner_current_page=1):
+    def weibo_tweets_gen(_inner_current_page=1, proxies=proxies):
         while True:
             if pages is not None and _inner_current_page > pages:
                 break
-            tweet_response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page)
+            tweet_response_json = weibo_tweets(containerid=tweet_container_id, page=_inner_current_page, proxies=proxies)
             # skip bad request
             if tweet_response_json is None:
                 continue
@@ -172,32 +173,32 @@ def get_weibo_tweets_formatted(tweet_container_id: str, with_comments: bool, pag
             yield weibo_tweet_parser
             _inner_current_page += 1
 
-    def weibo_comments_gen():
-        wtg = weibo_tweets_gen()
+    def weibo_comments_gen(proxies=proxies):
+        wtg = weibo_tweets_gen(proxies=proxies)
         for i in wtg:
             for j in i.cards_node:
-                id = j.mblog.id
+                _id = j.mblog.id
                 mid = j.mblog.mid
                 global comment_response
                 try:
-                    comment_response = weibo_comments(id=id, mid=mid)
+                    comment_response = weibo_comments(_id=_id, mid=mid, proxies=proxies)
                     tweet_comment_parser = WeiboCommentParser(comment_response)
                     j.mblog.comment_parser = tweet_comment_parser
                 except Exception as ex:
-                    logger.error(
-                        "#get_weibo_tweets_formatted.weibo_comments_gen request weibo comment occurred an exception, ex=%s,comment_response=%s" % (
-                            ex, comment_response))
+                    # logger.error(
+                    #     "#get_weibo_tweets_formatted.weibo_comments_gen request weibo comment occurred an exception, ex=%s,comment_response=%s" % (
+                    #         ex, comment_response))
                     j.mblog.comment_parser = None
-                    pass
+                    # pass
             yield i
 
     if with_comments:
-        yield from weibo_comments_gen()
+        yield from weibo_comments_gen(proxies=proxies)
     else:
-        yield from weibo_tweets_gen()
+        yield from weibo_tweets_gen(proxies=proxies)
 
 
-def weibo_get_index_parser(name: str = None, uid: str = None) -> _WeiboGetIndexResponse:
+def weibo_get_index_parser(name: str = None, uid: str = None, proxies: dict = None) -> _WeiboGetIndexResponse:
     """
     Get weibo get index parser
     :param name:  name
@@ -207,20 +208,20 @@ def weibo_get_index_parser(name: str = None, uid: str = None) -> _WeiboGetIndexR
     if uid is not None:
         _uid = uid
     elif name is not None:
-        _egu_response = exist_get_uid(name=name)
+        _egu_response = exist_get_uid(name=name, proxies=proxies)
         if not _egu_response.get('exist'):
             return None
         _uid = _egu_response.get('uid')
     else:
         return None
-    _weibo_get_index_response_parser = WeiboGetIndexParser(get_index_api_response=weibo_getIndex(uid_value=_uid))
+    _weibo_get_index_response_parser = WeiboGetIndexParser(get_index_api_response=weibo_getIndex(uid_value=_uid, proxies=proxies))
     if _weibo_get_index_response_parser.raw_response is None \
             or _weibo_get_index_response_parser.raw_response.get('data') == 0:
         return None
     return _weibo_get_index_response_parser
 
 @ws_handle
-def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
+def get_weibo_profile(name: str = None, uid: str = None, proxies: dict = None) -> _UserMetaResponse:
     """
     Get weibo profile
     >>> from weibo_scraper import get_weibo_profile
@@ -229,7 +230,7 @@ def get_weibo_profile(name: str = None, uid: str = None) -> _UserMetaResponse:
     :param name: name
     :return: UserMeta
     """
-    weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid)
+    weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid, proxies=proxies)
     return weibo_get_index_parser_response.user if weibo_get_index_parser_response is not None else None
 
 
@@ -241,7 +242,8 @@ FOLLOW_FLAG = 0
 def get_follows_and_followers(name: str = None,
                               uid: str = None,
                               pages: int = None,
-                              invoke_flag: int = FOLLOW_FLAG):
+                              invoke_flag: int = FOLLOW_FLAG,
+                              proxies: dict = None):
     """
     Get follows and followers by name or uid limit by pages
     :param invoke_flag: 0-follow , 1-follower
@@ -251,7 +253,7 @@ def get_follows_and_followers(name: str = None,
     :return:
     """
 
-    def gen_follows_and_followers(_inner_current_page=1, _total_items=0):
+    def gen_follows_and_followers(_inner_current_page=1, _total_items=0, proxies=proxies):
         while True:
             # stop max pages
             if pages is not None and _inner_current_page > pages:
@@ -259,11 +261,13 @@ def get_follows_and_followers(name: str = None,
             if invoke_flag == FOLLOW_FLAG:
                 _weibo_follows_and_followers_second_response = weibo_second(
                     containerid=weibo_get_index_parser_response.follow_containerid_second,
-                    page=_inner_current_page)
+                    page=_inner_current_page,
+                    proxies=proxies)
             else:
                 _weibo_follows_and_followers_second_response = weibo_second(
                     containerid=weibo_get_index_parser_response.follower_containerid_second,
-                    page=_inner_current_page)
+                    page=_inner_current_page,
+                    proxies=proxies)
             # skip bad request
             if _weibo_follows_and_followers_second_response is None:
                 continue
@@ -275,14 +279,14 @@ def get_follows_and_followers(name: str = None,
             yield _follow_and_follower_parser
             _inner_current_page += 1
 
-    weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid)
+    weibo_get_index_parser_response = weibo_get_index_parser(name=name, uid=uid, proxies=proxies)
     if weibo_get_index_parser_response is None:
         yield []
     else:
         yield from gen_follows_and_followers()
 
 
-def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None):
+def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_limit: int = None, proxies: dict = None):
     """
 
     :param max_item_limit:
@@ -292,7 +296,7 @@ def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_l
     :return:
     """
     current_total_pages = 0
-    follows_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages)
+    follows_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages, proxies=proxies)
     for follow in follows_iterator:
         if follow is None:
             yield None
@@ -307,7 +311,8 @@ def get_follows(name: str = None, uid: str = None, pages: int = None, max_item_l
 def get_followers(name: str = None,
                   uid: str = None,
                   pages: int = None,
-                  max_item_limit: int = None):
+                  max_item_limit: int = None,
+                  proxies: dict = None):
     """
     Get weibo follower by name, 粉丝
     XIHONGDOU's fans
@@ -322,7 +327,7 @@ def get_followers(name: str = None,
 
     """
     current_total_pages = 0
-    followers_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages, invoke_flag=1)
+    followers_iterator = get_follows_and_followers(name=name, uid=uid, pages=pages, invoke_flag=1, proxies=proxies)
     for follower in followers_iterator:
         if follower is None:
             yield None
@@ -335,11 +340,11 @@ def get_followers(name: str = None,
 
 
 @ws_handle
-def get_realtime_hotwords() -> List[RealTimeHotWordResponse]:
+def get_realtime_hotwords(proxies: dict = None) -> List[RealTimeHotWordResponse]:
     """
     get real time hot words
     """
-    hot_words = realtime_hotword()
+    hot_words = realtime_hotword(proxies=proxies)
     if None is hot_words:
         return []
 

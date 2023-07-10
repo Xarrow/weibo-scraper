@@ -13,7 +13,7 @@ from weibo_base.weibo_api import search_by_name
 from weibo_base.weibo_parser import weibo_getIndex, WeiboGetIndexParser
 
 
-def exist_get_uid(search_by_name_response: str = None, name: str = "") -> Dict:
+def exist_get_uid(search_by_name_response: str = None, name: str = "", proxies: dict = None) -> Dict:
     """
     whether name is exist in response which from search api, if exist ,return uid
     :param search_by_name_response:
@@ -21,7 +21,7 @@ def exist_get_uid(search_by_name_response: str = None, name: str = "") -> Dict:
     :return:
     """
     if not search_by_name_response or str(search_by_name_response) == '':
-        search_by_name_response = search_by_name(name)
+        search_by_name_response = search_by_name(name, proxies=proxies)
     # bad request
     if search_by_name_response.get('ok') != 1:
         return {"exist": False, "name": name, "uid": None}
@@ -36,7 +36,7 @@ def exist_get_uid(search_by_name_response: str = None, name: str = "") -> Dict:
     return {"exist": False, "name": name, "uid": None}
 
 
-def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
+def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = "", proxies: dict = None):
     """
     get weibo_containerid
     :param weibo_get_index_response:
@@ -45,7 +45,7 @@ def get_tweet_containerid(weibo_get_index_response: str = None, uid: str = ""):
     """
 
     if weibo_get_index_response is None or str(weibo_get_index_response) == '':
-        weibo_get_index_response = weibo_getIndex(uid)
+        weibo_get_index_response = weibo_getIndex(uid, proxies=proxies)
     if weibo_get_index_response.get('ok') != 1:
         return None
 
