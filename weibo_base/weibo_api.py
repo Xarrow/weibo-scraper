@@ -17,7 +17,7 @@ _GET_SECOND = "https://m.weibo.cn/api/container/getSecond"
 _COMMENTS_HOTFLOW = "https://m.weibo.cn/comments/hotflow"
 
 
-def search_by_name(name: str) -> Response:
+def search_by_name(name: str, proxies: dict = None) -> Response:
     """get summary info which searched by name,
      this api is like 'https://m.weibo.cn/api/container/getIndex?queryVal=<name sample as Helixcs>&containerid=100103type%3D3%26q%3D<name sample as Helixcs>'
 
@@ -27,13 +27,13 @@ def search_by_name(name: str) -> Response:
      :return json string including summary info
     """
     _params = {'queryVal': name, 'containerid': '100103type%3D3%26q%3D' + name}
-    _response = requests.get(url=_GET_INDEX, params=_params)
+    _response = requests.get(url=_GET_INDEX, params=_params, proxies=proxies, verify=False)
     if _response.status_code == 200:
         return _response.json()
     return None
 
 
-def weibo_getIndex(uid_value: str) -> Response:
+def weibo_getIndex(uid_value: str, proxies: dict = None) -> Response:
     """
     get personal summary info which request by uid, and uid is got by 'search_by_name'
     this api is like 'https://m.weibo.cn/api/container/getIndex?type=uid&value=<uid_value sample as 1843242321>'
@@ -44,13 +44,13 @@ def weibo_getIndex(uid_value: str) -> Response:
     :return:
     """
     _params = {"type": "uid", "value": uid_value}
-    _response = requests.get(url=_GET_INDEX, params=_params)
+    _response = requests.get(url=_GET_INDEX, params=_params, proxies=proxies, verify=False)
     if _response.status_code == 200:
         return _response.json()
     return None
 
 
-def weibo_tweets(containerid: str, page: int) -> Response:
+def weibo_tweets(containerid: str, page: int, proxies: dict = None) -> Response:
     """
     get person weibo tweets which from contaninerid in page,
     this api is like 'https://m.weibo.cn/container/getIndex?containerid=<containerid>&page=<page>'
@@ -61,7 +61,7 @@ def weibo_tweets(containerid: str, page: int) -> Response:
     :return:
     """
     _params = {"containerid": containerid, "page": page}
-    _response = requests.get(url=_GET_INDEX, params=_params)
+    _response = requests.get(url=_GET_INDEX, params=_params, proxies=proxies, verify=False)
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
     raise WeiboApiException(
@@ -69,7 +69,7 @@ def weibo_tweets(containerid: str, page: int) -> Response:
                                                                               _response if _response is None else _response.text))
 
 
-def weibo_containerid(containerid: str, page: int) -> Response:
+def weibo_containerid(containerid: str, page: int, proxies: dict = None) -> Response:
     """
 
     :param containerid:
@@ -77,14 +77,14 @@ def weibo_containerid(containerid: str, page: int) -> Response:
     :return:
     """
     _params = {"containerid": containerid, "page": page}
-    _response = requests.get(url=_GET_INDEX, params=_params)
+    _response = requests.get(url=_GET_INDEX, params=_params, proxies=proxies, verify=False)
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
     raise WeiboApiException(
         "weibo_containerid request failed, url={0},params={1},response={2}".format(_GET_INDEX, _params, _response))
 
 
-def weibo_second(containerid: str, page: int) -> Response:
+def weibo_second(containerid: str, page: int, proxies: dict = None) -> Response:
     """
     https://m.weibo.cn/api/container/getSecond
     :param containerid:
@@ -92,14 +92,14 @@ def weibo_second(containerid: str, page: int) -> Response:
     :return:
     """
     _params = {"containerid": containerid, "page": page}
-    _response = requests.get(url=_GET_SECOND, params=_params)
+    _response = requests.get(url=_GET_SECOND, params=_params, proxies=proxies, verify=False)
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
     raise WeiboApiException(
         "weibo_second request failed, url={0},params={1},response={2}".format(_GET_SECOND, _params, _response))
 
 
-def weibo_comments(id: str, mid: str) -> Response:
+def weibo_comments(_id: str, mid: str, proxies: dict = None) -> Response:
     """
     https://m.weibo.cn/comments/hotflow?id=4257059677028285&mid=4257059677028285
     get comments from userId and mid
@@ -107,17 +107,17 @@ def weibo_comments(id: str, mid: str) -> Response:
     :param mid:         mid
     :return:
     """
-    _params = {"id": id, "mid": mid}
-    _response = requests.get(url=_COMMENTS_HOTFLOW, params=_params)
+    _params = {"id": _id, "mid": mid}
+    _response = requests.get(url=_COMMENTS_HOTFLOW, params=_params, proxies=proxies, verify=False)
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
     raise WeiboApiException(
         "weibo_comments request failed, url={0},params={1},response={2}".format(_COMMENTS_HOTFLOW, _params, _response))
 
 
-def realtime_hotword():
+def realtime_hotword(proxies: dict = None):
     _params = {"containerid": "106003type%3D25%26t%3D3%26disable_hot%3D1%26filter_type%3Drealtimehot"}
-    _response = requests.get(url=_GET_INDEX, params=_params)
+    _response = requests.get(url=_GET_INDEX, params=_params, proxies=proxies, verify=False)
 
     if _response.status_code == 200 and _response.json().get("ok") == 1:
         return _response.json()
