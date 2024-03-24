@@ -8,8 +8,6 @@ requests = { extras = ['socks'] }
 twine = "*"
 pytest = "*"
 requests-html = "*"
-flask = "*"
-flasgger = "*"
 prompt-toolkit = "*"
 typing-extensions = "*"
 

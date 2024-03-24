@@ -19,7 +19,7 @@ from weibo_base.weibo_parser import \
     WeiboTweetParser, \
     FollowAndFollowerParser, \
     RealTimeHotWordResponse
-from weibo_base.weibo_util import ws_handle, WeiboScraperException, handle_enhance
+from weibo_base.weibo_util import WeiboScraperException, handle_enhance, logger
 
 try:
     assert sys.version_info.major == 3
