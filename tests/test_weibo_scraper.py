@@ -2,7 +2,7 @@
 
 """
  Author: Helixcs
- Site: https://github.com/Xarrow/weibo-scraper
+ Site: https://iliangqunru.bitcron.com/
  File: test_weibo_scraper.py
  Time: 5/11/18
 """
@@ -82,7 +82,7 @@ class TestWeiboScraper(unittest.TestCase):
 
     def test_weibo_get_index_parser(self):
         # test get weibo profile
-        get_inex_response = weibo_get_index(uid_value='1111681197')
+        get_inex_response = weibo_getIndex(uid_value='1111681197')
         wgip = WeiboGetIndexParser(get_index_api_response=get_inex_response)
         print(wgip)
 
@@ -119,9 +119,9 @@ class TestWeiboScraper(unittest.TestCase):
         print(wcp.comment_meta)
 
     def test_txt_export(self):
-        from persistence import persistence
-        persistence.dispatch(name='嘻红豆', pages=1, is_simplify=True, persistence_format="txt",
-                             export_file_name="梁群茹2txt", is_debug=True)
+        from samples.tweets_persistence import tweets_persistence
+        tweets_persistence.dispatch(name='不是旅客是归人', pages=None, is_simplify=True, persistence_format="txt",
+                                    export_file_name="不是旅客是归人", is_debug=True)
 
     def test_weibo_tweets_with_comments(self):
         """weibo comments"""
